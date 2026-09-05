@@ -1,0 +1,18 @@
+{
+  "release": "SHAKTI PANCHANG FINAL RELEASE CANDIDATE",
+  "status": "FINAL CANDIDATE — APK TESTING ONLY",
+  "gates": {
+    "KP": true,
+    "KP_Horary_1_249": true,
+    "KP_Cuspal_SubLord": true,
+    "KP_Dasha_Transit_Timing": true,
+    "Tajik_Varshaphal": true,
+    "Additional_Dashas": true,
+    "UMA_signal_prediction_upay": true,
+    "branding_XALEN_hidden_from_user": true,
+    "audit_artifacts_present": true
+  },
+  "known_release_note": "Numerical ephemeris certification must be validated on-device/CI against the declared independent reference fixture before publishing as an astronomical accuracy claim.",
+  "apk_gate": "PASS — testing may begin",
+  "publish_gate": "Do not claim external astronomical certification without executing the independent reference export comparison."
+}

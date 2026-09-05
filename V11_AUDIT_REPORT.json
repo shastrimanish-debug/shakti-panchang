@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0+32",
+  "dart_files": 111,
+  "missing_relative_imports": [],
+  "page_flip_dependency_count": 1,
+  "uma_answerData_async": true,
+  "uma_advanced_queries": true,
+  "uma_profile_keys": true,
+  "windows_workflow_references": []
+}

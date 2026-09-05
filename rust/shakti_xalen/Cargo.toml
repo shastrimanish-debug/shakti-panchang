@@ -1,0 +1,15 @@
+[package]
+name = "shakti_xalen"
+version = "0.2.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+xalen-ephem = { git = "https://github.com/vedika-io/xalen-ephemeris.git", rev = "cc6edbec1f748ebdc4950ae6198f575c5ada73fa", package = "xalen-ephem" }
+xalen-time = { git = "https://github.com/vedika-io/xalen-ephemeris.git", rev = "cc6edbec1f748ebdc4950ae6198f575c5ada73fa", package = "xalen-time" }
+xalen-ayanamsa = { git = "https://github.com/vedika-io/xalen-ephemeris.git", rev = "cc6edbec1f748ebdc4950ae6198f575c5ada73fa", package = "xalen-ayanamsa" }
+xalen-coords = { git = "https://github.com/vedika-io/xalen-ephemeris.git", rev = "cc6edbec1f748ebdc4950ae6198f575c5ada73fa", package = "xalen-coords" }
+xalen-houses = { git = "https://github.com/vedika-io/xalen-ephemeris.git", rev = "cc6edbec1f748ebdc4950ae6198f575c5ada73fa", package = "xalen-houses" }

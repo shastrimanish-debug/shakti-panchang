@@ -1,0 +1,9 @@
+{
+  "referenceEngine": "Swiss Ephemeris",
+  "referenceVersion": "2.10.03",
+  "ayanamsa": "KP/Newcomb",
+  "houseSystem": "Placidus",
+  "coordinateMode": "geocentric",
+  "planetToleranceArcsec": 2,
+  "cuspToleranceArcsec": 5
+}

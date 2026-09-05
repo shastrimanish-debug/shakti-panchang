@@ -1,0 +1,46 @@
+name: shakti_panchang
+description: Shakti Panchang with Uma voice assistant, Choghadiya, Muhurat and Disha Shool.
+publish_to: "none"
+version: 1.0.0+35
+
+environment:
+  sdk: ">=3.11.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  geolocator: ^14.0.3
+  intl: ^0.20.3
+  google_fonts: ^6.2.1
+  http: ^1.5.0
+  page_flip: ^0.2.5+1
+  flutter_tts: ^4.2.5
+  speech_to_text: ^7.4.0
+  shared_preferences: ^2.5.3
+  path_provider: ^2.1.5
+  ffi: ^2.1.3
+  flutter_local_notifications: ^19.4.0
+  timezone: ^0.10.1
+  pdf: ^3.11.0
+  printing: ^5.11.1
+  # 👇 पन्ना पलटने के लिए एकदम सही वर्ज़न
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  # 🌟 1. ऐप का मेन आइकन सेट करने वाला पैकेज
+  flutter_launcher_icons: ^0.13.1 
+
+# 🌟 2. यह सेटिंग तेरे '114031.png' (shakti_panchang_logo.png) को असली ऐप आइकन बना देगी
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/shakti_panchang_logo.png"
+  adaptive_icon_background: "#FFF8E7" # तेरे लोगो का बैकग्राउंड कलर
+  adaptive_icon_foreground: "assets/shakti_panchang_logo.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/shakti_panchang_logo.png

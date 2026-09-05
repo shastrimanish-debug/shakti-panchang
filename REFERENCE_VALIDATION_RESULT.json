@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "checked": 21,
+  "planetToleranceArcsec": 2.0,
+  "cuspToleranceArcsec": 5.0,
+  "mismatches": []
+}

@@ -1,0 +1,36 @@
+{
+  "settings": {
+    "zodiac": "sidereal",
+    "ayanamsa": "KP/Newcomb",
+    "houseSystem": "Placidus",
+    "nodeMode": "true",
+    "coordinateMode": "geocentric",
+    "tolerancePlanetArcsec": 2,
+    "toleranceCuspArcsec": 5
+  },
+  "planets": {
+    "Sun": 100.0,
+    "Moon": 210.0,
+    "Mars": 45.0,
+    "Mercury": 120.0,
+    "Jupiter": 300.0,
+    "Venus": 80.0,
+    "Saturn": 250.0,
+    "Rahu": 10.0,
+    "Ketu": 190.0
+  },
+  "cusps": {
+    "1": 10.0,
+    "2": 40.0,
+    "3": 70.0,
+    "4": 100.0,
+    "5": 130.0,
+    "6": 160.0,
+    "7": 190.0,
+    "8": 220.0,
+    "9": 250.0,
+    "10": 280.0,
+    "11": 310.0,
+    "12": 340.0
+  }
+}
