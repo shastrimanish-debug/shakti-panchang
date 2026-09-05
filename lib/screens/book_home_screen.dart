@@ -57,12 +57,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   Widget build(BuildContext context) {
     final pages = <Widget>[
       _cover(context),
-      _sectionPage(context, 'पंचांग', 'तिथि • नक्षत्र • योग • करण • सूर्य समय', Icons.calendar_month, () async {
-        final now = DateTime.now();
-        final data = await VedicPanchangService().calculate(date: now, latitude: _lat, longitude: _lon);
-        if (!context.mounted) return;
-        await _openRoute(PanchangDetailScreen(date: now, data: data));
-      }),
+      _sectionPage(context, 'पंचांग', 'तिथि • नक्षत्र • योग • करण • सूर्य समय', Icons.calendar_month, () => _openPanchang()),
       _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
       }),
@@ -211,6 +206,53 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           Text(AppConfig.poweredBy, style: const TextStyle(color: _brown, fontWeight: FontWeight.w800)),
         ]),
       );
+
+  Future<void> _openPanchang() async {
+    if (!mounted) return;
+
+    // Give the user immediate feedback while the native astronomical engine
+    // calculates the Panchang. Previously this async callback could fail or
+    // take time with no visible response, making the button appear dead.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final now = DateTime.now();
+      final data = await VedicPanchangService().calculate(
+        date: now,
+        latitude: _lat,
+        longitude: _lon,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => PanchangDetailScreen(date: now, data: data),
+        ),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _pageKey = GlobalKey<PageFlipWidgetState>();
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final state = _pageKey.currentState;
+        if (state != null && _page > 0) state.goToPage(_page);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('पंचांग खोलने में समस्या: $e')),
+      );
+    }
+  }
 
   Future<void> _openRoute(Widget page) async {
     // PageFlipWidget keeps an internal animation/snapshot state. Rebuilding the
