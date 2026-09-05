@@ -208,13 +208,34 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   }
 
   Future<void> _openUma(String title, String description) async {
-    await _openRoute(
-      UmaScreen(
-        date: DateTime.now(),
-        pageContext: title,
-        pageDescription: description,
+    // UMA is an assistant route, not a book chapter. Open it directly instead
+    // of routing it through PageFlipWidget so a page-level UMA button can
+    // never be swallowed by the book's gesture/snapshot state.
+    final returnPage = _page;
+    if (!mounted) return;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UmaScreen(
+          date: DateTime.now(),
+          pageContext: title,
+          pageDescription: description,
+        ),
       ),
     );
+    if (!mounted) return;
+
+    setState(() {
+      _pageKey = GlobalKey<PageFlipWidgetState>();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = _pageKey.currentState;
+      if (state != null && returnPage > 0) {
+        state.goToPage(returnPage);
+      }
+    });
   }
 
   Widget _paperPage(Widget child) => Container(
