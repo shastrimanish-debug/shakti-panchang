@@ -53,54 +53,119 @@ class _UmaScreenState extends State<UmaScreen> {
 
   Future<void> _loadAppContext() async {
     try {
-      if (_activeKundali == null) {
-        final profiles = await appIntelligence.loadSavedContext().then((x) => x.savedProfiles);
-        if (profiles.isNotEmpty) {
-          final p = profiles.first;
-          final rawDate = (p['date'] ?? p['birthDate'] ?? '').toString();
-          final dateParts = rawDate.contains('T') ? rawDate.substring(0, 10).split('-') : rawDate.split('-');
-          final timeParts = (p['time'] ?? p['birthTime'] ?? '12:00').toString().split(':');
-          if (dateParts.length == 3) {
-            int day;
-            int month;
-            int year;
-            if (rawDate.contains('T')) {
-              year = int.tryParse(dateParts[0]) ?? DateTime.now().year;
-              month = int.tryParse(dateParts[1]) ?? 1;
-              day = int.tryParse(dateParts[2]) ?? 1;
-            } else {
-              day = int.tryParse(dateParts[0]) ?? 1;
-              month = int.tryParse(dateParts[1]) ?? 1;
-              year = int.tryParse(dateParts[2]) ?? DateTime.now().year;
-            }
-            final hour = int.tryParse(timeParts.first) ?? 12;
-            final minute = timeParts.length > 1 ? int.tryParse(timeParts[1]) ?? 0 : 0;
-            final place = (p['place'] ?? p['birthPlace'] ?? '').toString();
-            final lat = (p['lat'] ?? p['latitude']);
-            final lng = (p['lng'] ?? p['longitude']);
-            _activeKundali = await KundaliCalculator.calculate(
-              name: p['name']?.toString() ?? 'जातक',
-              birthDate: DateTime(year, month, day),
-              birthTime: '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
-              birthPlace: place,
-              latitude: lat is num ? lat.toDouble() : 0,
-              longitude: lng is num ? lng.toDouble() : 0,
-              timezoneHours: 5.5,
-            );
+      // Load the saved snapshot once. The previous implementation loaded the
+      // same store twice, which could delay the first UMA response and made
+      // failures harder to diagnose.
+      var snapshot = await appIntelligence.loadSavedContext(
+        active: _activeKundali,
+      );
+
+      if (_activeKundali == null && snapshot.savedProfiles.isNotEmpty) {
+        final p = snapshot.savedProfiles.first;
+        final rawDate = (p['date'] ?? p['birthDate'] ?? '').toString();
+        final dateParts = rawDate.contains('T')
+            ? rawDate.substring(0, 10).split('-')
+            : rawDate.split('-');
+        final timeParts =
+            (p['time'] ?? p['birthTime'] ?? '12:00').toString().split(':');
+
+        if (dateParts.length == 3) {
+          final int day;
+          final int month;
+          final int year;
+          if (rawDate.contains('T')) {
+            year = int.tryParse(dateParts[0]) ?? DateTime.now().year;
+            month = int.tryParse(dateParts[1]) ?? 1;
+            day = int.tryParse(dateParts[2]) ?? 1;
+          } else {
+            day = int.tryParse(dateParts[0]) ?? 1;
+            month = int.tryParse(dateParts[1]) ?? 1;
+            year = int.tryParse(dateParts[2]) ?? DateTime.now().year;
           }
+
+          final hour = int.tryParse(timeParts.first) ?? 12;
+          final minute =
+              timeParts.length > 1 ? int.tryParse(timeParts[1]) ?? 0 : 0;
+          final place = (p['place'] ?? p['birthPlace'] ?? '').toString();
+          final lat = p['lat'] ?? p['latitude'];
+          final lng = p['lng'] ?? p['longitude'];
+
+          _activeKundali = await KundaliCalculator.calculate(
+            name: p['name']?.toString() ?? 'जातक',
+            birthDate: DateTime(year, month, day),
+            birthTime:
+                '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
+            birthPlace: place,
+            latitude: lat is num ? lat.toDouble() : 0,
+            longitude: lng is num ? lng.toDouble() : 0,
+            timezoneHours: 5.5,
+          );
+
+          snapshot = await appIntelligence.loadSavedContext(
+            active: _activeKundali,
+          );
         }
       }
-      _appContext = await appIntelligence.loadSavedContext(active: _activeKundali);
-    } catch (_) {
-      _appContext = await appIntelligence.loadSavedContext(active: _activeKundali);
+
+      _appContext = snapshot;
+    } catch (e) {
+      // UMA must remain usable even if a saved profile is corrupt or the
+      // native chart engine is temporarily unavailable.
+      _appContext = await appIntelligence.loadSavedContext(
+        active: _activeKundali,
+      );
     }
-    if (mounted) setState(() => _loadingAppContext = false);
+
+    if (!mounted) return;
+    setState(() => _loadingAppContext = false);
+
+    // When UMA is opened from a book page, immediately explain that page and
+    // speak the answer. When opened standalone, give a short audible greeting.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      if (widget.pageContext != null) {
+        await _safeAsk(_pageInfoQuestion);
+      } else {
+        try {
+          await uma.speak('नमस्ते! मैं उमा हूँ। आप मुझसे अपने शब्दों में सवाल पूछ सकते हैं।');
+        } catch (_) {
+          // TTS is optional; text interaction remains available.
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     input.dispose();
     super.dispose();
+  }
+
+  Future<void> _safeAsk([String? question]) async {
+    try {
+      await ask(question);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => isProcessing = false);
+      const message = 'उमा को उत्तर तैयार करते समय एक अस्थायी समस्या आई। कृपया फिर से पूछें।';
+      setState(() {
+        decision = UmaDecision(
+          userQuestion: question ?? input.text,
+          shortAnswer: message,
+          spokenAnswer: message,
+          level: UmaDecisionLevel.insufficientData,
+          reasons: const ['UMA runtime error handled safely'],
+          checks: const ['ऐप बंद नहीं होगा; अगला प्रश्न फिर से पूछा जा सकता है।'],
+          action: 'कृपया दोबारा पूछें।',
+        );
+        chatHistory.add({'role': 'uma', 'message': message});
+      });
+      try {
+        await uma.speak(message);
+      } catch (_) {
+        // TTS failure must never lock the UMA UI.
+      }
+    }
   }
 
   Future<void> ask([String? overrideQuestion]) async {
@@ -241,7 +306,7 @@ class _UmaScreenState extends State<UmaScreen> {
     final q = await uma.listen();
     if (q == null || q.trim().isEmpty) return;
     input.text = q;
-    await ask(q);
+    await _safeAsk(q);
   }
 
   String level(UmaDecisionLevel x) => switch (x) {
@@ -316,11 +381,11 @@ class _UmaScreenState extends State<UmaScreen> {
                             ActionChip(
                               avatar: const Icon(Icons.menu_book_rounded, size: 18),
                               label: const Text('इस पन्ने की पूरी जानकारी'),
-                              onPressed: isProcessing ? null : () => ask(_pageInfoQuestion),
+                              onPressed: isProcessing ? null : () => _safeAsk(_pageInfoQuestion),
                             ),
                           ...['मेरा पूरा data बताओ', 'अभी कौन सी दशा है?', 'साढ़ेसाती चल रही है?', 'मेरे ग्रह कहाँ हैं?', 'KP cusp बताओ', 'Jaimini बताओ', 'मेरी saved कुंडलियाँ बताओ'].map((q) => ActionChip(
                             label: Text(q),
-                            onPressed: isProcessing ? null : () => ask(q),
+                            onPressed: isProcessing ? null : () => _safeAsk(q),
                           )),
                         ],
                       ),
@@ -345,7 +410,7 @@ class _UmaScreenState extends State<UmaScreen> {
                                 backgroundColor: const Color(0xFF7A3E00),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                              onPressed: isProcessing ? null : () => ask(),
+                              onPressed: isProcessing ? null : () => _safeAsk(),
                               icon: isProcessing 
                                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                                 : const Icon(Icons.auto_awesome),

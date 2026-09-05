@@ -34,7 +34,7 @@ class BookHomeScreen extends StatefulWidget {
 }
 
 class _BookHomeScreenState extends State<BookHomeScreen> {
-  final _pageKey = GlobalKey<PageFlipWidgetState>();
+  GlobalKey<PageFlipWidgetState> _pageKey = GlobalKey<PageFlipWidgetState>();
   int _page = 0;
   SavedLocation? _location;
 
@@ -61,30 +61,30 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         final now = DateTime.now();
         final data = await VedicPanchangService().calculate(date: now, latitude: _lat, longitude: _lon);
         if (!context.mounted) return;
-        Navigator.push(context, MaterialPageRoute(builder: (_) => PanchangDetailScreen(date: now, data: data)));
+        await _openRoute(PanchangDetailScreen(date: now, data: data));
       }),
-      _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const KundaliScreen()));
+      _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
+        await _openRoute(const KundaliScreen());
       }),
-      _sectionPage(context, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () {
+      _sectionPage(context, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () async {
         final now = DateTime.now();
         final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
-        Navigator.push(context, MaterialPageRoute(builder: (_) => MuhuratScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise))));
+        await _openRoute(MuhuratScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise)));
       }),
-      _sectionPage(context, 'यात्रा', 'दिशाशूल • शुभ दिशा • यात्रा सलाह', Icons.alt_route, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place)));
+      _sectionPage(context, 'यात्रा', 'दिशाशूल • शुभ दिशा • यात्रा सलाह', Icons.alt_route, () async {
+        await _openRoute(YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place));
       }),
-      _sectionPage(context, 'व्रत एवं त्योहार', 'एकादशी • पूर्णिमा • अमावस्या • पर्व', Icons.festival, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => FestivalsScreen(date: DateTime.now())));
+      _sectionPage(context, 'व्रत एवं त्योहार', 'एकादशी • पूर्णिमा • अमावस्या • पर्व', Icons.festival, () async {
+        await _openRoute(FestivalsScreen(date: DateTime.now()));
       }),
       _sectionPage(context, 'शुभ समय', 'चौघड़िया • राहुकाल • यमगण्ड • गुलिक', Icons.timer, () async {
         final now = DateTime.now();
         final p = await PanchangBoundaryService(AstronomyEngineService()).calculate(now);
         if (!context.mounted) return;
-        Navigator.push(context, MaterialPageRoute(builder: (_) => ShubhSamayScreen(date: now, panchang: p, dishaShool: DishaService.avoided(now))));
+        await _openRoute(ShubhSamayScreen(date: now, panchang: p, dishaShool: DishaService.avoided(now)));
       }),
-      _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderScreen()));
+      _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
+        await _openRoute(const ReminderScreen());
       }),
     ];
 
@@ -182,15 +182,37 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ]),
       );
 
-  void _openUma(String title, String description) {
-    Navigator.push(
+  Future<void> _openRoute(Widget page) async {
+    // PageFlipWidget keeps an internal animation/snapshot state. Rebuilding the
+    // book with the same GlobalKey after a child route returns can leave that
+    // snapshot intercepting taps. Recreate the widget after every child route
+    // and restore the page the user was reading.
+    final returnPage = _page;
+    await Navigator.push<void>(
       context,
-      MaterialPageRoute(
-        builder: (_) => UmaScreen(
-          date: DateTime.now(),
-          pageContext: title,
-          pageDescription: description,
-        ),
+      MaterialPageRoute(builder: (_) => page),
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _pageKey = GlobalKey<PageFlipWidgetState>();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = _pageKey.currentState;
+      if (state != null && returnPage > 0) {
+        state.goToPage(returnPage);
+      }
+    });
+  }
+
+  Future<void> _openUma(String title, String description) async {
+    await _openRoute(
+      UmaScreen(
+        date: DateTime.now(),
+        pageContext: title,
+        pageDescription: description,
       ),
     );
   }
