@@ -15,7 +15,7 @@ void main() {
     final result = const KpAstrologyEngine().calculate(const [
       KpInput(cusp: 10, starLord: 'Shani', subLord: 'Budh', significatorHouses: [10, 6, 14, 0]),
     ]);
-    expect(result.single.significatorHouses, [10, 6]);
+    expect(result.single.significatorHouses, [6, 10]);
     expect(result.single.house, 10);
   });
 

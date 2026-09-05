@@ -17,10 +17,21 @@ void main() {
     expect(table[9].number, 10);
     expect(table[9].fromDegree, closeTo(13.3333333333, 1e-8));
   });
-  test('six sign-crossing subs produce 249 rows', () {
+  test('sign-crossing subs produce the canonical 249 rows', () {
     final table = engine.table();
+    expect(table.length, 249);
     expect(table.where((x) => x.sign == 'मेष').length, 22);
-    expect(table.where((x) => x.sign == 'वृषभ').length, 22);
+    expect(table.where((x) => x.sign == 'वृषभ').length, 19);
+    expect(table.where((x) => x.sign == 'मिथुन').length, 21);
+    expect(table.where((x) => x.sign == 'कर्क').length, 21);
+    expect(table.where((x) => x.sign == 'सिंह').length, 22);
+    expect(table.where((x) => x.sign == 'कन्या').length, 19);
+    expect(table.where((x) => x.sign == 'तुला').length, 21);
+    expect(table.where((x) => x.sign == 'वृश्चिक').length, 21);
+    expect(table.where((x) => x.sign == 'धनु').length, 22);
+    expect(table.where((x) => x.sign == 'मकर').length, 19);
+    expect(table.where((x) => x.sign == 'कुंभ').length, 21);
+    expect(table.where((x) => x.sign == 'मीन').length, 21);
     expect(table.last.number, 249);
     expect(table.last.sign, 'मीन');
   });
