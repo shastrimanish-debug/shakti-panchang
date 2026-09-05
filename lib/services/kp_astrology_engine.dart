@@ -14,7 +14,7 @@ class KpSignal {
 class KpAstrologyEngine {
   const KpAstrologyEngine();
   List<KpSignal> calculate(List<KpInput> inputs) => inputs.map((i) {
-    final houses = i.significatorHouses.where((h) => h >= 1 && h <= 12).toSet().toList()..sort();
+    final houses = <int>{...i.significatorHouses.where((h) => h >= 1 && h <= 12)}.toList()..sort();
     return KpSignal(house: i.cusp.clamp(1,12).toInt(), starLord: i.starLord.trim(), subLord: i.subLord.trim(), significatorHouses: houses, score: (houses.length*i.weight).clamp(0.0,12.0).toDouble());
   }).toList(growable:false);
 

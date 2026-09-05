@@ -43,7 +43,7 @@ class FullAstrologyEngine {
   /// birth is derived from the Moon's progress through its nakshatra.
   List<DashaPeriod> yoginiDasha(KundaliData d, {int cycles = 4}) {
     const lords = ['मंगला','पिंगला','धन्या','भ्रामरी','भद्रा','उल्का','सिद्धा','संकटा'];
-    const years = [1,2,3,4,5,6,7,8];
+    const years = [1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0];
     const nakToStart = [0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2];
     final moon = d.planets.firstWhere((p) => p.planet == 'चंद्र');
     final nak = (moon.degree / (360 / 27)).floor().clamp(0,26);

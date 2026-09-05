@@ -84,7 +84,11 @@ class KpHoraryEngine {
         a = b;
       }
     }
-    split.sort((a,b) => a.from.compareTo(b.from));
+    split.sort((a,b) {
+      final fromCmp = a.from.compareTo(b.from);
+      if (fromCmp != 0) return fromCmp;
+      return a.to.compareTo(b.to);
+    });
     return List.generate(split.length, (i) {
       final a = split[i];
       final signIndex = (a.from / 30.0).floor().clamp(0,11);
