@@ -62,7 +62,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         final data = await VedicPanchangService().calculate(date: now, latitude: _lat, longitude: _lon);
         if (!context.mounted) return;
         await _openRoute(PanchangDetailScreen(date: now, data: data));
-      }),
+      }, usePointerUma: true),
       _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
       }),
@@ -144,7 +144,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ]),
       );
 
-  Widget _sectionPage(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onOpen, {Future<void> Function()? onUma}) => _paperPage(
+  Widget _sectionPage(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onOpen, {bool usePointerUma = false}) => _paperPage(
         Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(icon, size: 72, color: _gold),
           const SizedBox(height: 20),
@@ -154,11 +154,24 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           const SizedBox(height: 28),
           FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.open_in_new), label: const Text('यह अध्याय खोलें')),
           const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () => _openUma(title, subtitle),
-            icon: const Icon(Icons.auto_awesome_rounded),
-            label: const Text('उमा — इस पन्ने की जानकारी'),
-          ),
+          if (usePointerUma)
+            Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerUp: (_) => _openUma(title, subtitle),
+              child: IgnorePointer(
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.auto_awesome_rounded),
+                  label: const Text('उमा — इस पन्ने की जानकारी'),
+                ),
+              ),
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: () => _openUma(title, subtitle),
+              icon: const Icon(Icons.auto_awesome_rounded),
+              label: const Text('उमा — इस पन्ने की जानकारी'),
+            ),
           const SizedBox(height: 18),
           const Text('बाएँ/दाएँ स्वाइप करके पन्ना पलटें', style: TextStyle(color: Colors.black54, fontSize: 12)),
         ]),
