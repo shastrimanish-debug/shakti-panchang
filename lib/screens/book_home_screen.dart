@@ -37,11 +37,23 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   GlobalKey<PageFlipWidgetState> _pageKey = GlobalKey<PageFlipWidgetState>();
   int _page = 0;
   SavedLocation? _location;
+  Future<dynamic>? _panchangFuture;
+  String? _panchangCacheKey;
+  bool _openingPanchang = false;
 
   @override
   void initState() {
     super.initState();
-    LocationStore().selected().then((value) { if (mounted) setState(() => _location = value); });
+    _primePanchang();
+    LocationStore().selected().then((value) {
+      if (!mounted) return;
+      setState(() {
+        _location = value;
+        _panchangFuture = null;
+        _panchangCacheKey = null;
+      });
+      _primePanchang();
+    });
   }
 
   double get _lat => _location?.latitude ?? 23.1765;
@@ -105,27 +117,45 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
                       children: pages,
                       lastPage: _backCover(context),
                     ),
-                    if (_page == 1)
+                    if (_page == 1) ...[
+                      Positioned(
+                        top: constraints.maxHeight * 0.52,
+                        left: constraints.maxWidth * 0.10,
+                        right: constraints.maxWidth * 0.10,
+                        height: 90,
+                        child: Opacity(
+                          opacity: 0.01,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: FilledButton.icon(
+                              onPressed: _openingPanchang ? null : _openPanchang,
+                              icon: const Icon(Icons.open_in_new),
+                              label: const Text('यह अध्याय खोलें'),
+                            ),
+                          ),
+                        ),
+                      ),
                       Positioned(
                         top: constraints.maxHeight * 0.64,
-                        left: constraints.maxWidth * 0.18,
-                        right: constraints.maxWidth * 0.18,
-                        height: 58,
+                        left: constraints.maxWidth * 0.10,
+                        right: constraints.maxWidth * 0.10,
+                        height: 90,
                         child: Opacity(
                           opacity: 0.01,
                           child: Material(
                             color: Colors.transparent,
                             child: OutlinedButton.icon(
-                            onPressed: () => _openUma(
-                              'पंचांग',
-                              'तिथि • नक्षत्र • योग • करण • सूर्य समय',
-                            ),
-                            icon: const Icon(Icons.auto_awesome_rounded),
+                              onPressed: () => _openUma(
+                                'पंचांग',
+                                'तिथि • नक्षत्र • योग • करण • सूर्य समय',
+                              ),
+                              icon: const Icon(Icons.auto_awesome_rounded),
                               label: const Text('उमा — इस पन्ने की जानकारी'),
                             ),
                           ),
                         ),
                       ),
+                    ],
                   ],
                 );
               },
@@ -207,50 +237,59 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ]),
       );
 
-  Future<void> _openPanchang() async {
-    if (!mounted) return;
+  String _panchangKey(DateTime date) =>
+      '${date.year}-${date.month}-${date.day}|${_lat.toStringAsFixed(6)}|${_lon.toStringAsFixed(6)}';
 
-    // Give the user immediate feedback while the native astronomical engine
-    // calculates the Panchang. Previously this async callback could fail or
-    // take time with no visible response, making the button appear dead.
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+  Future<dynamic> _calculatePanchangCached() {
+    final now = DateTime.now();
+    final key = _panchangKey(now);
+    if (_panchangFuture != null && _panchangCacheKey == key) {
+      return _panchangFuture!;
+    }
+    _panchangCacheKey = key;
+    _panchangFuture = VedicPanchangService().calculate(
+      date: now,
+      latitude: _lat,
+      longitude: _lon,
     );
+    return _panchangFuture!;
+  }
+
+  void _primePanchang() {
+    // Warm only an in-memory Future. Nothing is written to disk, so there is
+    // no stale persistent cache, while opening Panchang becomes immediate
+    // after the astronomical calculation has completed once.
+    _calculatePanchangCached().then<void>((_) {}, onError: (_, __) {
+      // A failed warm-up is harmless; the next tap retries with a fresh Future.
+      _panchangFuture = null;
+      _panchangCacheKey = null;
+    });
+  }
+
+  Future<void> _openPanchang() async {
+    if (!mounted || _openingPanchang) return;
+    setState(() => _openingPanchang = true);
 
     try {
       final now = DateTime.now();
-      final data = await VedicPanchangService().calculate(
-        date: now,
-        latitude: _lat,
-        longitude: _lon,
-      );
-
+      final data = await _calculatePanchangCached();
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
 
       await Navigator.of(context).push<void>(
         MaterialPageRoute(
           builder: (_) => PanchangDetailScreen(date: now, data: data),
         ),
       );
-
-      if (!mounted) return;
-      setState(() {
-        _pageKey = GlobalKey<PageFlipWidgetState>();
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final state = _pageKey.currentState;
-        if (state != null && _page > 0) state.goToPage(_page);
-      });
     } catch (e) {
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
+      _panchangFuture = null;
+      _panchangCacheKey = null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('पंचांग खोलने में समस्या: $e')),
       );
+    } finally {
+      if (!mounted) return;
+      setState(() => _openingPanchang = false);
     }
   }
 
