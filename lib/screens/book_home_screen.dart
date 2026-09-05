@@ -62,7 +62,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         final data = await VedicPanchangService().calculate(date: now, latitude: _lat, longitude: _lon);
         if (!context.mounted) return;
         await _openRoute(PanchangDetailScreen(date: now, data: data));
-      }, onUma: () => _openPanchangUma()),
+      }),
       _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
       }),
@@ -155,7 +155,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.open_in_new), label: const Text('यह अध्याय खोलें')),
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: onUma == null ? () => _openUma(title, subtitle) : onUma,
+            onPressed: onUma == null ? () => _openUma(title, subtitle) : () => onUma!(),
             icon: const Icon(Icons.auto_awesome_rounded),
             label: const Text('उमा — इस पन्ने की जानकारी'),
           ),
@@ -204,25 +204,6 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       if (state != null && returnPage > 0) {
         state.goToPage(returnPage);
       }
-    });
-  }
-
-  Future<void> _openPanchangUma() async {
-    // Panchang gets a dedicated direct route. This avoids any interaction
-    // between the page-specific UMA action and PageFlip's gesture layer.
-    if (!mounted) return;
-    final returnPage = _page;
-    await Navigator.of(context, rootNavigator: true).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const _PanchangUmaLaunch(),
-      ),
-    );
-    if (!mounted) return;
-    setState(() => _pageKey = GlobalKey<PageFlipWidgetState>());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final state = _pageKey.currentState;
-      if (state != null && returnPage > 0) state.goToPage(returnPage);
     });
   }
 
