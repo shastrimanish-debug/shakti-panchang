@@ -111,7 +111,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
         return;
       }
 
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
+      );
       
       String placeName = 'आपका वर्तमान स्थान (GPS)';
       

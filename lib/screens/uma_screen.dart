@@ -8,7 +8,6 @@ import '../services/uma_ai_service.dart';
 import '../services/xalen_service.dart';
 import '../models/kundali_model.dart';
 import '../services/kundali_calculator.dart';
-import '../services/kundali_profile_store.dart';
 import '../services/uma_app_intelligence.dart';
 
 class UmaScreen extends StatefulWidget {

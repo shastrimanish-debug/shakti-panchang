@@ -14,9 +14,6 @@ class KundaliModulesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color bhojBg = Color(0xFFF4E8D1);
-    const Color bhojBrown = Color(0xFF5C3A21);
-
     return _ModulesBookFrame(data: data, pages: [
       _AllChartsPage(data: data),
       _PrashnaKundaliPage(data: data),
