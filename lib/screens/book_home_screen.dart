@@ -62,7 +62,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         final data = await VedicPanchangService().calculate(date: now, latitude: _lat, longitude: _lon);
         if (!context.mounted) return;
         await _openRoute(PanchangDetailScreen(date: now, data: data));
-      }, usePointerUma: true),
+      }),
       _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
       }),
@@ -99,11 +99,41 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       body: Column(
         children: [
           Expanded(
-            child: PageFlipWidget(
-              key: _pageKey,
-              backgroundColor: _bg,
-              children: pages,
-              lastPage: _backCover(context),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    PageFlipWidget(
+                      key: _pageKey,
+                      backgroundColor: _bg,
+                      children: pages,
+                      lastPage: _backCover(context),
+                    ),
+                    if (_page == 1)
+                      Positioned(
+                        top: constraints.maxHeight * 0.64,
+                        left: constraints.maxWidth * 0.18,
+                        right: constraints.maxWidth * 0.18,
+                        height: 58,
+                        child: Opacity(
+                          opacity: 0.01,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: OutlinedButton.icon(
+                            onPressed: () => _openUma(
+                              'पंचांग',
+                              'तिथि • नक्षत्र • योग • करण • सूर्य समय',
+                            ),
+                            icon: const Icon(Icons.auto_awesome_rounded),
+                              label: const Text('उमा — इस पन्ने की जानकारी'),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
           Padding(
@@ -144,7 +174,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ]),
       );
 
-  Widget _sectionPage(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onOpen, {bool usePointerUma = false}) => _paperPage(
+  Widget _sectionPage(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onOpen) => _paperPage(
         Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(icon, size: 72, color: _gold),
           const SizedBox(height: 20),
@@ -154,24 +184,11 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           const SizedBox(height: 28),
           FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.open_in_new), label: const Text('यह अध्याय खोलें')),
           const SizedBox(height: 10),
-          if (usePointerUma)
-            Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerUp: (_) => _openUma(title, subtitle),
-              child: IgnorePointer(
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  label: const Text('उमा — इस पन्ने की जानकारी'),
-                ),
-              ),
-            )
-          else
-            OutlinedButton.icon(
-              onPressed: () => _openUma(title, subtitle),
-              icon: const Icon(Icons.auto_awesome_rounded),
-              label: const Text('उमा — इस पन्ने की जानकारी'),
-            ),
+          OutlinedButton.icon(
+            onPressed: () => _openUma(title, subtitle),
+            icon: const Icon(Icons.auto_awesome_rounded),
+            label: const Text('उमा — इस पन्ने की जानकारी'),
+          ),
           const SizedBox(height: 18),
           const Text('बाएँ/दाएँ स्वाइप करके पन्ना पलटें', style: TextStyle(color: Colors.black54, fontSize: 12)),
         ]),
@@ -221,34 +238,13 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   }
 
   Future<void> _openUma(String title, String description) async {
-    // UMA is an assistant route, not a book chapter. Open it directly instead
-    // of routing it through PageFlipWidget so a page-level UMA button can
-    // never be swallowed by the book's gesture/snapshot state.
-    final returnPage = _page;
-    if (!mounted) return;
-    await Navigator.push<void>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => UmaScreen(
-          date: DateTime.now(),
-          pageContext: title,
-          pageDescription: description,
-        ),
+    await _openRoute(
+      UmaScreen(
+        date: DateTime.now(),
+        pageContext: title,
+        pageDescription: description,
       ),
     );
-    if (!mounted) return;
-
-    setState(() {
-      _pageKey = GlobalKey<PageFlipWidgetState>();
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final state = _pageKey.currentState;
-      if (state != null && returnPage > 0) {
-        state.goToPage(returnPage);
-      }
-    });
   }
 
   Widget _paperPage(Widget child) => Container(
@@ -263,4 +259,3 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         child: child,
       );
 }
-
