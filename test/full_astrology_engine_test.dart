@@ -1,23 +1,68 @@
 import 'package:flutter_test/flutter_test.dart';
+
+import '../lib/models/kundali_model.dart';
 import '../lib/services/full_astrology_engine.dart';
-import '../lib/services/kundali_calculator.dart';
 
 void main() {
-  test('Yogini dasha has deterministic 8-lord cycle', () async {
-    final d = await KundaliCalculator.calculate(
+  test('Yogini dasha has deterministic 8-lord cycle', () {
+    // IMPORTANT:
+    // Do not call KundaliCalculator.calculate() here.
+    //
+    // That method loads the native XALEN/Rust astronomical engine, which
+    // intentionally targets Android. `flutter test` runs on the GitHub
+    // Linux runner, so this unit test must remain independent of native FFI.
+    //
+    // The Yogini Dasha engine itself only needs the birth date and Moon
+    // longitude. We therefore provide a deterministic synthetic KundaliData
+    // containing a fixed Moon position.
+
+    final birthDate = DateTime(1990, 1, 1);
+
+    final data = KundaliData(
       name: 'Test',
-      birthDate: DateTime(1990, 1, 1),
+      birthDate: birthDate,
       birthTime: '12:00',
       birthPlace: 'Vadodara',
       latitude: 22.3072,
       longitude: 73.1812,
+      timezoneHours: 5.5,
+
+      // Moon at 15 degrees sidereal longitude.
+      //
+      // This lies inside the first nakshatra and therefore gives a
+      // deterministic Yogini starting lord.
+      planets: [
+        PlanetPosition(
+          planet: 'चंद्र',
+          rashi: 'मेष',
+          degree: 15.0,
+          house: 1,
+        ),
+      ],
+
+      lagnaDegree: 0.0,
+      lagnaRashi: 'मेष',
+      moonRashi: 'मेष',
+      sunRashi: 'मेष',
+      nakshatra: 'अश्विनी',
+      charan: '4',
+      nadi: 'आदि',
+      gana: 'देव',
+      yoni: 'अश्व',
+      varna: 'क्षत्रिय',
+      mahadasha: 'केतु',
+      antardasha: 'केतु',
+      dashaPeriods: const [],
+      antarPeriods: const [],
+      pratyantarPeriods: const [],
     );
 
-    final periods = const FullAstrologyEngine().yoginiDasha(d);
+    final periods = const FullAstrologyEngine().yoginiDasha(data);
 
+    // Four complete 8-lord cycles.
     expect(periods.length, 32);
 
-    const lords = <String>[
+    const expectedCycle = <String>[
       'मंगला',
       'पिंगला',
       'धन्या',
@@ -28,25 +73,19 @@ void main() {
       'संकटा',
     ];
 
-    // The first lord is determined from the Moon's birth nakshatra.
-    // From that point onward, the Yogini lords must advance in the
-    // canonical 8-lord order and wrap around deterministically.
-    final firstIndex = lords.indexOf(periods.first.planet);
+    // With Moon at 15 degrees, the first Yogini lord is determined
+    // deterministically by the first nakshatra.
+    expect(periods.first.planet, expectedCycle.first);
 
-    expect(
-      firstIndex,
-      greaterThanOrEqualTo(0),
-      reason: 'Unexpected first Yogini lord: ${periods.first.planet}',
-    );
-
+    // Verify all four complete cycles.
     for (var i = 0; i < periods.length; i++) {
-      final expectedLord = lords[(firstIndex + i) % lords.length];
+      final expectedLord = expectedCycle[i % expectedCycle.length];
 
       expect(
         periods[i].planet,
         expectedLord,
         reason:
-            'Unexpected Yogini lord at period $i: '
+            'Invalid Yogini lord at index $i: '
             'expected $expectedLord, got ${periods[i].planet}',
       );
 
@@ -54,18 +93,19 @@ void main() {
         periods[i].endDate.isAfter(periods[i].startDate),
         isTrue,
         reason:
-            'Invalid date range for Yogini period ${periods[i].planet} '
+            'Invalid date range for ${periods[i].planet} '
             'at index $i.',
       );
     }
 
-    // Every complete 8-lord cycle must repeat exactly.
+    // Explicitly verify the cycle repeats after 8 periods.
     for (var i = 0; i < 24; i++) {
       expect(
         periods[i + 8].planet,
         periods[i].planet,
         reason:
-            'Yogini cycle did not repeat at index $i / ${i + 8}.',
+            'Yogini 8-lord cycle did not repeat at '
+            '$i -> ${i + 8}.',
       );
     }
   });
