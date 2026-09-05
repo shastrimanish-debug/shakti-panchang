@@ -155,7 +155,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.open_in_new), label: const Text('यह अध्याय खोलें')),
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: onUma == null ? () => _openUma(title, subtitle) : () => onUma!(),
+            onPressed: onUma == null ? () => _openUma(title, subtitle) : onUma,
             icon: const Icon(Icons.auto_awesome_rounded),
             label: const Text('उमा — इस पन्ने की जानकारी'),
           ),
