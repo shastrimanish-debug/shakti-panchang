@@ -155,7 +155,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.open_in_new), label: const Text('यह अध्याय खोलें')),
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: onUma == null ? () => _openUma(title, subtitle) : () => onUma!(),
+            onPressed: () => _openUma(title, subtitle),
             icon: const Icon(Icons.auto_awesome_rounded),
             label: const Text('उमा — इस पन्ने की जानकारी'),
           ),
@@ -251,13 +251,3 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       );
 }
 
-class _PanchangUmaLaunch extends StatelessWidget {
-  const _PanchangUmaLaunch();
-
-  @override
-  Widget build(BuildContext context) => UmaScreen(
-        date: DateTime.now(),
-        pageContext: 'पंचांग',
-        pageDescription: 'तिथि • नक्षत्र • योग • करण • सूर्य समय',
-      );
-}
