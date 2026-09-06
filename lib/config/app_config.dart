@@ -3,6 +3,7 @@ class AppConfig {
   static const assistantName = 'उमा';
   static const tagline = 'वैदिक पंचांग • शुभ मुहूर्त • यात्रा दिशा';
   static const planName = 'Shakti Panchang Premium';
+  static const premiumProductId = 'shakti_panchang_yearly';
   static const priceLabel = '₹99 / वर्ष';
   static const pricePaise = 9900;
   static const poweredBy = 'Powered by SHIV SHAKTI';

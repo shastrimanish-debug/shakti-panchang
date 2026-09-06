@@ -4,12 +4,14 @@ import 'package:intl/date_symbol_data_local.dart' as intl;
 import 'screens/book_home_screen.dart';
 import 'config/app_config.dart';
 import 'services/reminder_service.dart';
+import 'services/premium_billing_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await intl.initializeDateFormatting('hi_IN');
   runApp(const ShaktiPanchangApp());
   unawaited(ReminderService.instance.init());
+  unawaited(PremiumBillingService.instance.init());
 }
 
 class ShaktiPanchangApp extends StatelessWidget {

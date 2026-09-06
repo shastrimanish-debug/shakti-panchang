@@ -9,6 +9,7 @@ import 'reminder_screen.dart';
 import 'shubh_samay_screen.dart';
 import 'yatra_screen.dart';
 import 'panchang_detail_screen.dart';
+import 'premium_screen.dart';
 import '../services/vedic_panchang_service.dart';
 import '../services/solar_service.dart';
 import '../services/panchang_boundary_service.dart';
@@ -193,6 +194,12 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
             onPressed: () => _openUma('मुख्य ग्रंथ आवरण', 'पूरे SHAKTI PANCHANG के अध्यायों और UMA की सहायता के बारे में मार्गदर्शन।'),
             icon: const Icon(Icons.auto_awesome_rounded),
             label: const Text('उमा से मार्गदर्शन'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => _openRoute(const PremiumScreen()),
+            icon: const Icon(Icons.workspace_premium_rounded),
+            label: const Text('Shakti Panchang Premium'),
           ),
           const SizedBox(height: 24),
           Text(AppConfig.poweredBy, style: const TextStyle(color: _brown, fontWeight: FontWeight.w800)),
