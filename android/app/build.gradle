@@ -51,6 +51,17 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def hasReleaseSigning = keystorePropertiesFile.exists() &&
+        keystoreProperties.getProperty("keyAlias") &&
+        keystoreProperties.getProperty("keyPassword") &&
+        keystoreProperties.getProperty("storeFile") &&
+        keystoreProperties.getProperty("storePassword") &&
+        file(keystoreProperties.getProperty("storeFile")).exists()
+
+if (!hasReleaseSigning) {
+    logger.lifecycle("Release signing key not configured. Release builds will fail with a clear error.")
+}
+
 android {
     namespace = "com.shivshakti.shaktipanchang"
     compileSdk = flutter.compileSdkVersion
@@ -91,10 +102,12 @@ android {
             versionNameSuffix "-debug"
         }
         release {
-            // CI/test builds may not have the private Play signing key.
-            // Use debug signing only as a temporary local/CI fallback.
-            // Production Play Store builds must provide android/key.properties.
-            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
+            if (!hasReleaseSigning) {
+                throw new GradleException(
+                    "Release signing is not configured. Provide android/key.properties and the upload keystore before building a Play release."
+                )
+            }
+            signingConfig signingConfigs.release
         }
     }
 }

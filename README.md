@@ -1,34 +1,33 @@
 # Shakti Panchang
 
-**Shakti Panchang** — Panchang, Choghadiya, Muhurat, Yatra and Disha Shool with **उमा** voice assistant.
+**Shakti Panchang** — Panchang, Choghadiya, Muhurat, Yatra, Disha Shool, Kundali and **उमा** voice assistant.
 
 ### Commercial plan
 **Shakti Panchang Premium — ₹99 / year**
 
+Google Play subscription product ID: `shakti_panchang_yearly`
+
+The app now contains a real Google Play Billing purchase/restore flow. Google Play is authoritative for the localized subscription price and purchase status.
+
 ### Brand
 **Powered by SHIV SHAKTI**
 
-### Current milestone
-V10.1 Commercial branding update.
+### Release
+Version **1.1.0+38**.
 
-> Flutter SDK/build and live store billing validation are intentionally the next post-V10 stage.
+Release builds require a real Play upload keystore and intentionally fail when signing credentials are missing. See `docs/PLAY_RELEASE_SETUP.md`.
 
-## Codemagic Debug
+### CI
+GitHub Actions performs Flutter analyze/tests and builds signed release APK + AAB after decoding the upload keystore from CI secrets.
 
-The Android project is checked into the repository with a pinned build toolchain:
+Codemagic provides the equivalent `shakti_panchang_release` workflow.
 
-- Gradle 8.14.3
-- AGP 8.11.1
-- `android.newDsl=false`
+### Privacy policy
+A ready-to-host policy is included at `privacy_policy/index.html`. Host it at:
 
-Codemagic does **not** run `flutter create`, so it cannot overwrite these versions.
+`https://myshivshakti.in/shakti-business/privacy-policy/`
 
-Workflow: `shakti_panchang_debug`
-
-Artifact: `app-debug.apk`
+### Astronomy accuracy note
+`REFERENCE_VALIDATION_RESULT.json` records the existing 21-case reference validation. The release process must still run the current Flutter test suite and should not claim independent astronomical certification beyond the checked fixture.
 
 **Powered by SHIV SHAKTI**
-
-
-## Full astrology calculation pass
-`FullAstrologyEngine` now provides the integration facade for full KP cusp/significator output, Yogini Dasha timing, and an astronomical solar-return search used by Varshaphal. These outputs are calculated from the project's astronomical engine rather than generated as generic AI text.
