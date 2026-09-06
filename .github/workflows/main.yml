@@ -2,9 +2,11 @@ name: Build Shakti Panchang Android
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -19,15 +21,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ---------------------------------------------------------
+      # 1. Checkout source
+      # ---------------------------------------------------------
       - name: Checkout source
         uses: actions/checkout@v5
 
+      # ---------------------------------------------------------
+      # 2. Flutter - fixed version
+      # ---------------------------------------------------------
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.1'
           channel: stable
-          cache: true
+          cache: false
 
+      - name: Show Flutter version
+        run: |
+          flutter --version
+          dart --version
+
+      # ---------------------------------------------------------
+      # 3. Java 17
+      # ---------------------------------------------------------
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # ---------------------------------------------------------
+      # 4. Rust
+      # ---------------------------------------------------------
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -36,35 +63,185 @@ jobs:
             armv7-linux-androideabi
             x86_64-linux-android
 
+      # ---------------------------------------------------------
+      # 5. cargo-ndk
+      # ---------------------------------------------------------
       - name: Install cargo-ndk
         run: cargo install cargo-ndk
 
+      # ---------------------------------------------------------
+      # 6. Configure Play release signing
+      # ---------------------------------------------------------
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${KEYSTORE_BASE64:-}" ]; then
+            echo "ERROR: KEYSTORE_BASE64 secret is missing."
+            exit 1
+          fi
+
+          if [ -z "${KEYSTORE_PASSWORD:-}" ]; then
+            echo "ERROR: KEYSTORE_PASSWORD secret is missing."
+            exit 1
+          fi
+
+          if [ -z "${KEY_PASSWORD:-}" ]; then
+            echo "ERROR: KEY_PASSWORD secret is missing."
+            exit 1
+          fi
+
+          if [ -z "${KEY_ALIAS:-}" ]; then
+            echo "ERROR: KEY_ALIAS secret is missing."
+            exit 1
+          fi
+
+          KEYSTORE_FILE="$GITHUB_WORKSPACE/android/shakti-panchang-upload.jks"
+
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_FILE"
+
+          if [ ! -s "$KEYSTORE_FILE" ]; then
+            echo "ERROR: Keystore file was not created."
+            exit 1
+          fi
+
+          cat > "$GITHUB_WORKSPACE/android/key.properties" <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=$KEYSTORE_FILE
+          EOF
+
+          echo "Release signing configuration created successfully."
+
+      # ---------------------------------------------------------
+      # 7. Verify keystore
+      # ---------------------------------------------------------
+      - name: Verify upload keystore
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          keytool -list \
+            -keystore android/shakti-panchang-upload.jks \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "${{ secrets.KEY_ALIAS }}"
+
+      # ---------------------------------------------------------
+      # 8. Flutter dependencies
+      # ---------------------------------------------------------
       - name: Flutter Pub Get
         run: flutter pub get
 
+      # ---------------------------------------------------------
+      # 9. Analyze
+      # ---------------------------------------------------------
       - name: Flutter Analyze
         run: flutter analyze
 
+      # ---------------------------------------------------------
+      # 10. Tests
+      # ---------------------------------------------------------
       - name: Flutter Test
         run: flutter test
 
+      # ---------------------------------------------------------
+      # 11. Check Rust build script
+      # ---------------------------------------------------------
       - name: Check Rust Android build script
         run: bash -n rust/build_android.sh
 
+      # ---------------------------------------------------------
+      # 12. Clean build
+      # ---------------------------------------------------------
+      - name: Flutter Clean
+        run: flutter clean
+
+      - name: Flutter Pub Get After Clean
+        run: flutter pub get
+
+      # ---------------------------------------------------------
+      # 13. Build signed Release APK
+      # ---------------------------------------------------------
       - name: Build Release APK
         run: flutter build apk --release
 
+      # ---------------------------------------------------------
+      # 14. Build signed Release AAB
+      # ---------------------------------------------------------
       - name: Build Release AAB
         run: flutter build appbundle --release
 
+      # ---------------------------------------------------------
+      # 15. Verify APK signature
+      # ---------------------------------------------------------
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          set -e
+
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" \
+            -name apksigner \
+            -type f \
+            | sort -V \
+            | tail -n 1)
+
+          if [ -z "$APKSIGNER" ]; then
+            echo "ERROR: apksigner not found."
+            exit 1
+          fi
+
+          "$APKSIGNER" verify --verbose \
+            build/app/outputs/flutter-apk/app-release.apk
+
+      # ---------------------------------------------------------
+      # 16. Verify AAB signature
+      # ---------------------------------------------------------
+      - name: Verify AAB signature
+        run: |
+          jarsigner -verify \
+            -verbose \
+            -certs \
+            build/app/outputs/bundle/release/app-release.aab
+
+      # ---------------------------------------------------------
+      # 17. Show output files
+      # ---------------------------------------------------------
+      - name: Show release artifacts
+        run: |
+          ls -lh build/app/outputs/flutter-apk/
+          ls -lh build/app/outputs/bundle/release/
+
+      # ---------------------------------------------------------
+      # 18. Upload APK
+      # ---------------------------------------------------------
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: shakti-panchang-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
 
+      # ---------------------------------------------------------
+      # 19. Upload AAB
+      # ---------------------------------------------------------
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: shakti-panchang-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      # ---------------------------------------------------------
+      # 20. Cleanup private signing files
+      # ---------------------------------------------------------
+      - name: Cleanup signing files
+        if: always()
+        run: |
+          rm -f android/key.properties
+          rm -f android/shakti-panchang-upload.jks
