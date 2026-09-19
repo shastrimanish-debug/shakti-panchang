@@ -10,6 +10,12 @@ class AppConfig {
   static const planDescription =
       'एक साल के लिए पूरा पंचांग, उमा, मुहूर्त, चौघड़िया और यात्रा सुविधाएँ।';
 
+  static const githubRepoUrl = 'https://github.com/shastrimanish-debug/shakti-panchang';
+  static const githubReleasesUrl = 'https://github.com/shastrimanish-debug/shakti-panchang/releases';
+  static const githubLatestReleaseUrl = 'https://github.com/shastrimanish-debug/shakti-panchang/releases/latest';
+  static const releaseTag = 'v1.2.0';
+  static const releaseName = 'शक्ति पंचांग ग्रंथ 1.2.0';
+
   static const features = <String>[
     'पूरा दैनिक पंचांग',
     'दिन और रात के चौघड़िया',
@@ -22,5 +28,6 @@ class AppConfig {
     'पर्व • व्रत • एकादशी • पूर्णिमा • अमावस्या',
     'Multiple saved locations',
     'उमा smart conversation और reminders',
+    'XALEN + मीयस जाँच (Swiss नहीं)',
   ];
 }

@@ -1,4 +1,6 @@
 import '../models/astronomical_panchang.dart';
+import 'calc_settings.dart';
+import 'meeus_engine.dart';
 import 'solar_service.dart';
 import 'xalen_service.dart';
 
@@ -45,10 +47,23 @@ class AstronomicalPanchangService {
       longitude: longitude,
     );
 
-    // Panchang's sunrise state is calculated by the astronomical engine at the local sunrise.
-    final x = _astronomyEngine.calculate(solar.sunrise);
-    final sunLon = _norm(x.sunSiderealDeg);
-    final moonLon = _norm(x.moonSiderealDeg);
+    // Panchang's sunrise state: XALEN native, Meeus fallback (free, no Swiss).
+    double sunLon;
+    double moonLon;
+    double ayan;
+    var engineName = 'XALEN';
+    final settings = await CalcSettingsStore().load();
+    try {
+      final x = _astronomyEngine.calculate(solar.sunrise);
+      ayan = x.ayanamsaDeg;
+      sunLon = _norm(x.sunSiderealDeg);
+      moonLon = _norm(x.moonSiderealDeg);
+    } catch (_) {
+      engineName = 'मीयस';
+      ayan = MeeusEngine.ayanamsha(solar.sunrise, settings.ayanamsha);
+      sunLon = _norm(MeeusEngine.sunTropical(solar.sunrise) - ayan);
+      moonLon = _norm(MeeusEngine.moonTropical(solar.sunrise) - ayan);
+    }
 
     final diff = _norm(moonLon - sunLon);
     final tithiNumber = (diff / 12.0).floor() + 1;
@@ -94,14 +109,16 @@ class AstronomicalPanchangService {
       solarRashi: rashis[rashiIndex],
       solarLongitude: sunLon,
       lunarLongitude: moonLon,
-      ayanamsha: x.ayanamsaDeg,
-      ayanamshaName: 'लाहिरी',
-      engine: 'सटीक खगोलीय गणना',
+      ayanamsha: ayan,
+      ayanamshaName: settings.ayanamsha == 'raman'
+          ? 'रमन'
+          : settings.ayanamsha == 'kp'
+              ? 'के.पी.'
+              : 'लाहिरी',
+      engine: engineName,
       precisionNote:
-          'मुख्य पंचांग गणना सटीक खगोलीय engine से की गई है। '
-          'तिथि, नक्षत्र, योग, करण और सूर्य राशि Sun/Moon sidereal longitudes '
-          'से निकाले गए हैं। Sunrise/sunset local solar-time service से हैं। '
-          'Swiss Ephemeris केवल अलग diagnostic/comparison screen में उपलब्ध है।',
+          'मुख्य इंजन $engineName। जाँच इंजन मीयस (मुफ़्त)। Swiss Ephemeris नहीं। '
+          'तिथि-नक्षत्र सूर्योदय पर। स्थान सेव रहता है।',
     );
   }
 

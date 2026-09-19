@@ -10,6 +10,7 @@ import 'shubh_samay_screen.dart';
 import 'yatra_screen.dart';
 import 'panchang_detail_screen.dart';
 import 'premium_screen.dart';
+import 'accuracy_screen.dart';
 import '../services/vedic_panchang_service.dart';
 import '../services/solar_service.dart';
 import '../services/panchang_boundary_service.dart';
@@ -103,6 +104,17 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         foregroundColor: Colors.white,
         centerTitle: true,
         title: const Text('शक्ति पंचांग • वैदिक ग्रंथ', style: TextStyle(fontWeight: FontWeight.w900)),
+        actions: [
+          IconButton(
+            tooltip: 'गणना जाँच',
+            icon: const Icon(Icons.science_outlined),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => AccuracyScreen(lat: _lat, lon: _lon, date: DateTime.now()),
+              ));
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
