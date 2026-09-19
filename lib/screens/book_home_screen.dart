@@ -38,6 +38,7 @@ class BookHomeScreen extends StatefulWidget {
 class _BookHomeScreenState extends State<BookHomeScreen> {
   GlobalKey<PageFlipWidgetState> _pageKey = GlobalKey<PageFlipWidgetState>();
   int _page = 0;
+  int _bookStart = 0;
   SavedLocation? _location;
   Future<dynamic>? _panchangFuture;
   String? _panchangCacheKey;
@@ -70,31 +71,31 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      _cover(context),
-      _sectionPage(context, 'पंचांग', 'तिथि • नक्षत्र • योग • करण • सूर्य समय', Icons.calendar_month, () => _openPanchang()),
-      _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
+      KeyedSubtree(key: const ValueKey('cover'), child: _cover(context)),
+      KeyedSubtree(key: const ValueKey('panchang'), child: _sectionPage(context, 'पंचांग', 'तिथि • नक्षत्र • योग • करण • सूर्य समय', Icons.calendar_month, () => _openPanchang())),
+      KeyedSubtree(key: const ValueKey('kundali'), child: _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
-      }),
-      _sectionPage(context, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () async {
+      })),
+      KeyedSubtree(key: const ValueKey('muhurat'), child: _sectionPage(context, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () async {
         final now = DateTime.now();
         final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
         await _openRoute(MuhuratScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise)));
-      }),
-      _sectionPage(context, 'यात्रा', 'दिशाशूल • शुभ दिशा • यात्रा सलाह', Icons.alt_route, () async {
+      })),
+      KeyedSubtree(key: const ValueKey('yatra'), child: _sectionPage(context, 'यात्रा', 'दिशाशूल • शुभ दिशा • यात्रा सलाह', Icons.alt_route, () async {
         await _openRoute(YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place));
-      }),
-      _sectionPage(context, 'व्रत एवं त्योहार', 'एकादशी • पूर्णिमा • अमावस्या • पर्व', Icons.festival, () async {
+      })),
+      KeyedSubtree(key: const ValueKey('festivals'), child: _sectionPage(context, 'व्रत एवं त्योहार', 'एकादशी • पूर्णिमा • अमावस्या • पर्व', Icons.festival, () async {
         await _openRoute(FestivalsScreen(date: DateTime.now()));
-      }),
-      _sectionPage(context, 'शुभ समय', 'चौघड़िया • राहुकाल • यमगण्ड • गुलिक', Icons.timer, () async {
+      })),
+      KeyedSubtree(key: const ValueKey('shubh'), child: _sectionPage(context, 'शुभ समय', 'चौघड़िया • राहुकाल • यमगण्ड • गुलिक', Icons.timer, () async {
         final now = DateTime.now();
         final p = await PanchangBoundaryService(AstronomyEngineService()).calculate(now);
         if (!context.mounted) return;
         await _openRoute(ShubhSamayScreen(date: now, panchang: p, dishaShool: DishaService.avoided(now)));
-      }),
-      _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
+      })),
+      KeyedSubtree(key: const ValueKey('reminder'), child: _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
         await _openRoute(const ReminderScreen());
-      }),
+      })),
     ];
 
     return Scaffold(
@@ -119,69 +120,39 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       body: Column(
         children: [
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    PageFlipWidget(
-                      key: _pageKey,
-                      backgroundColor: _bg,
-                      children: pages,
-                      lastPage: _backCover(context),
-                    ),
-                    if (_page == 1) ...[
-                      Positioned(
-                        top: constraints.maxHeight * 0.52,
-                        left: constraints.maxWidth * 0.10,
-                        right: constraints.maxWidth * 0.10,
-                        height: 90,
-                        child: Opacity(
-                          opacity: 0.01,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: FilledButton.icon(
-                              onPressed: _openingPanchang ? null : _openPanchang,
-                              icon: const Icon(Icons.open_in_new),
-                              label: const Text('यह अध्याय खोलें'),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: constraints.maxHeight * 0.64,
-                        left: constraints.maxWidth * 0.10,
-                        right: constraints.maxWidth * 0.10,
-                        height: 90,
-                        child: Opacity(
-                          opacity: 0.01,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _openUma(
-                                'पंचांग',
-                                'तिथि • नक्षत्र • योग • करण • सूर्य समय',
-                              ),
-                              icon: const Icon(Icons.auto_awesome_rounded),
-                              label: const Text('उमा — इस पन्ने की जानकारी'),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                );
+            child: PageFlipWidget(
+              key: _pageKey,
+              backgroundColor: _bg,
+              initialIndex: _bookStart,
+              onPageFlipped: (i) {
+                if (!mounted) return;
+                setState(() => _page = i);
               },
+              children: pages,
+              lastPage: _backCover(context),
             ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                IconButton(onPressed: _page > 0 ? () => _go(_page - 1) : null, icon: const Icon(Icons.chevron_left)),
-                Text('पन्ना ${_page + 1} / ${pages.length}', style: const TextStyle(fontWeight: FontWeight.w800, color: _brown)),
-                IconButton(onPressed: _page < pages.length - 1 ? () => _go(_page + 1) : null, icon: const Icon(Icons.chevron_right)),
+                if (_page >= 1 && _page <= 7)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: FilledButton.icon(
+                      onPressed: _openingPanchang ? null : _openCurrentChapter,
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('यह अध्याय खोलें'),
+                    ),
+                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(onPressed: _page > 0 ? () => _go(_page - 1) : null, icon: const Icon(Icons.chevron_left)),
+                    Text('पन्ना ${_page + 1} / ${pages.length}', style: const TextStyle(fontWeight: FontWeight.w800, color: _brown)),
+                    IconButton(onPressed: _page < pages.length - 1 ? () => _go(_page + 1) : null, icon: const Icon(Icons.chevron_right)),
+                  ],
+                ),
               ],
             ),
           ),
@@ -285,6 +256,37 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
     });
   }
 
+  Future<void> _openCurrentChapter() async {
+    switch (_page) {
+      case 1:
+        await _openPanchang();
+        return;
+      case 2:
+        await _openRoute(const KundaliScreen());
+        return;
+      case 3:
+        final now = DateTime.now();
+        final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
+        await _openRoute(MuhuratScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise)));
+        return;
+      case 4:
+        await _openRoute(YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place));
+        return;
+      case 5:
+        await _openRoute(FestivalsScreen(date: DateTime.now()));
+        return;
+      case 6:
+        final now = DateTime.now();
+        final p = await PanchangBoundaryService(AstronomyEngineService()).calculate(now);
+        if (!mounted) return;
+        await _openRoute(ShubhSamayScreen(date: now, panchang: p, dishaShool: DishaService.avoided(now)));
+        return;
+      case 7:
+        await _openRoute(const ReminderScreen());
+        return;
+    }
+  }
+
   Future<void> _openPanchang() async {
     if (!mounted || _openingPanchang) return;
     setState(() => _openingPanchang = true);
@@ -325,6 +327,8 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
     if (!mounted) return;
 
     setState(() {
+      _page = returnPage;
+      _bookStart = returnPage;
       _pageKey = GlobalKey<PageFlipWidgetState>();
     });
 
