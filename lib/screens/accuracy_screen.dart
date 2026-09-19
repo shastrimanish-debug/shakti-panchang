@@ -55,7 +55,8 @@ class _AccuracyScreenState extends State<AccuracyScreen> {
               const Text('गणना विकल्प', style: TextStyle(fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _s.ayanamsha,
+                key: ValueKey('aya-${_s.ayanamsha}'),
+                initialValue: _s.ayanamsha,
                 decoration: const InputDecoration(labelText: 'अयनांश'),
                 items: const [
                   DropdownMenuItem(value: 'lahiri', child: Text('लाहिरी / चित्रपक्ष')),
@@ -67,7 +68,8 @@ class _AccuracyScreenState extends State<AccuracyScreen> {
                 },
               ),
               DropdownButtonFormField<String>(
-                value: _s.nodeType,
+                key: ValueKey('node-${_s.nodeType}'),
+                initialValue: _s.nodeType,
                 decoration: const InputDecoration(labelText: 'राहु'),
                 items: const [
                   DropdownMenuItem(value: 'mean', child: Text('मध्य राहु')),
@@ -78,7 +80,8 @@ class _AccuracyScreenState extends State<AccuracyScreen> {
                 },
               ),
               DropdownButtonFormField<String>(
-                value: _s.houseSystem,
+                key: ValueKey('house-${_s.houseSystem}'),
+                initialValue: _s.houseSystem,
                 decoration: const InputDecoration(labelText: 'भाव'),
                 items: const [
                   DropdownMenuItem(value: 'whole', child: Text('राशि भाव')),
