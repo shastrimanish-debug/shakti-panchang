@@ -9,6 +9,8 @@ import '../services/xalen_service.dart';
 import '../models/kundali_model.dart';
 import '../services/kundali_calculator.dart';
 import '../services/uma_app_intelligence.dart';
+import '../services/vedic_panchang_service.dart';
+import '../services/location_store.dart';
 
 class UmaScreen extends StatefulWidget {
   final DateTime date;
@@ -180,6 +182,37 @@ class _UmaScreenState extends State<UmaScreen> {
 
     final cmd = router.route(question);
 
+    // Personal data / "मेरा डेटा बताओ" — always answer from live panchang + saved chart.
+    if (_isPersonalDataQuestion(question)) {
+      final overview = await _liveOverview();
+      final appContext = _appContext ??
+          await appIntelligence.loadSavedContext(active: _activeKundali);
+      _appContext = appContext;
+      final extra = await appIntelligence.answerData(
+        question,
+        appContext,
+        pageContext: widget.pageContext,
+        pageDescription: widget.pageDescription,
+      );
+      final reply = '$overview\n\n$extra';
+      setState(() {
+        decision = UmaDecision(
+          userQuestion: question,
+          shortAnswer: reply,
+          spokenAnswer: reply,
+          level: UmaDecisionLevel.recommended,
+          reasons: const ['आज का पंचांग', 'सेव कुंडली / स्थान'],
+          checks: const ['उमा वास्तविक ऐप डेटा से उत्तर दे रही है।'],
+          action: 'राहुकाल, चौघड़िया, कुंडली या यात्रा भी पूछ सकते हैं।',
+        );
+        chatHistory.add({'role': 'uma', 'message': reply});
+        lastQuestion = question;
+        isProcessing = false;
+      });
+      await uma.speak(reply);
+      return;
+    }
+
     // 0. App-aware UMA: answer from actual saved/calculated app data first.
     final appContext = _appContext;
     if (appContext != null) {
@@ -238,6 +271,27 @@ class _UmaScreenState extends State<UmaScreen> {
       return;
     }
 
+    // Help / unknown: give today's panchang instead of "विषय नहीं मिला".
+    if (cmd.intent == UmaIntent.help) {
+      final reply = await _liveOverview();
+      setState(() {
+        decision = UmaDecision(
+          userQuestion: question,
+          shortAnswer: reply,
+          spokenAnswer: reply,
+          level: UmaDecisionLevel.recommended,
+          reasons: const ['सामान्य प्रश्न', 'आज का पंचांग'],
+          checks: const ['स्पष्ट विषय न मिले तो उमा वर्तमान डेटा बताती है।'],
+          action: 'राहुकाल, चौघड़िया, कुंडली या यात्रा पूछें।',
+        );
+        chatHistory.add({'role': 'uma', 'message': reply});
+        lastQuestion = question;
+        isProcessing = false;
+      });
+      await uma.speak(reply);
+      return;
+    }
+
     // 2. Non-activity Intent Handling with Contextual Intelligence
     if (cmd.intent != UmaIntent.activity) {
       final reply = uma.contextualReply(question, cmd);
@@ -285,6 +339,51 @@ class _UmaScreenState extends State<UmaScreen> {
         SnackBar(content: Text('उमा गणना त्रुटि: $e')),
       );
     }
+  }
+
+  bool _isPersonalDataQuestion(String q) {
+    final t = q.toLowerCase();
+    const keys = [
+      'मेरा डेटा',
+      'मेरा data',
+      'मेरा डाटा',
+      'mera data',
+      'my data',
+      'डेटा बता',
+      'data बता',
+      'डाटा बता',
+      'data batao',
+      'डेटा बताओ',
+      'पूरा data',
+      'पूरा डेटा',
+      'all data',
+      'मैंने क्या',
+      'क्या डेटा',
+      'क्या data',
+    ];
+    return keys.any(t.contains);
+  }
+
+  Future<String> _liveOverview() async {
+    final loc = await LocationStore().selected();
+    final lat = loc?.latitude ?? 23.1765;
+    final lon = loc?.longitude ?? 75.7885;
+    final place = loc?.name ?? 'उज्जैन';
+    String panchangLine;
+    try {
+      final p = await VedicPanchangService().calculate(
+        date: widget.date,
+        latitude: lat,
+        longitude: lon,
+      );
+      panchangLine =
+          'आज $place में ${p.weekday} है। ${p.paksha} ${p.tithi}, नक्षत्र ${p.nakshatra}, योग ${p.yoga}, करण ${p.karana}।';
+    } catch (_) {
+      panchangLine = 'आज का पंचांग $place के लिए तैयार हो रहा है।';
+    }
+    final saved = _appContext?.describeSavedData() ??
+        'सेव कुंडली अभी नहीं खुली। कुंडली अध्याय में जन्म विवरण भरें।';
+    return '$panchangLine $saved आप राहुकाल, चौघड़िया, कुंडली या यात्रा पूछ सकते हैं।';
   }
 
   String _advancedFollowUpReply(String q) {

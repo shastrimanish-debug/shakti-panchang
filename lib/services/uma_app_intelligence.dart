@@ -147,7 +147,7 @@ class UmaAppIntelligence {
       return 'आप अभी "$pageContext" पेज पर हैं। $detail Active जातक ${d.name} है; जन्म ${d.birthDate.day}-${d.birthDate.month}-${d.birthDate.year} ${d.birthTime}, स्थान ${d.birthPlace}। लग्न ${d.lagnaRashi}, चंद्र राशि ${d.moonRashi}, नक्षत्र ${d.nakshatra}। ग्रह स्थिति: $planets। वर्तमान दशा: ${_dashaShort(d)}। इस पेज के chart/result को समझने के लिए मैं इसी वास्तविक data को आधार मान रही हूँ।';
     }
 
-    if (_has(q, ['कितनी कुंडली', 'कितने profile', 'profiles', 'saved', 'सेव', 'मैंने क्या data', 'क्या डेटा', 'what data'])) {
+    if (_has(q, ['कितनी कुंडली', 'कितने profile', 'profiles', 'saved', 'सेव', 'मैंने क्या data', 'क्या डेटा', 'what data', 'मेरा डेटा', 'मेरा data', 'मेरा डाटा', 'mera data', 'डेटा बता', 'data बता'])) {
       return context.describeSavedData();
     }
 
