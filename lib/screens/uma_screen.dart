@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/uma_decision.dart';
+import '../models/panchang_models.dart';
 import '../services/uma_command_router.dart';
 import '../services/uma_decision_engine.dart';
 import '../services/panchang_boundary_service.dart';
@@ -11,6 +13,9 @@ import '../services/kundali_calculator.dart';
 import '../services/uma_app_intelligence.dart';
 import '../services/vedic_panchang_service.dart';
 import '../services/location_store.dart';
+import '../services/solar_service.dart';
+import '../services/choghadiya_service.dart';
+import '../services/inauspicious_service.dart';
 
 class UmaScreen extends StatefulWidget {
   final DateTime date;
@@ -180,9 +185,31 @@ class _UmaScreenState extends State<UmaScreen> {
     });
     input.clear();
 
+    await uma.stop();
+
     final cmd = router.route(question);
 
-    // Personal data / "मेरा डेटा बताओ" — always answer from live panchang + saved chart.
+    Future<void> finish(String reply) async {
+      if (!mounted) return;
+      setState(() {
+        decision = UmaDecision(
+          userQuestion: question,
+          shortAnswer: reply,
+          spokenAnswer: reply,
+          level: UmaDecisionLevel.recommended,
+          reasons: const ['प्रत्येक प्रश्न का स्वतंत्र उत्तर'],
+          checks: const ['अगला सवाल तुरंत पूछ सकते हैं'],
+          action: 'राहुकाल, चौघड़िया, कुंडली, यात्रा या मुहूर्त पूछें।',
+        );
+        chatHistory.add({'role': 'uma', 'message': reply});
+        lastQuestion = question;
+        isProcessing = false;
+      });
+      unawaited(uma.speak(reply));
+    }
+
+    try {
+    // Personal data / "मेरा डेटा बताओ"
     if (_isPersonalDataQuestion(question)) {
       final overview = await _liveOverview();
       final appContext = _appContext ??
@@ -194,22 +221,7 @@ class _UmaScreenState extends State<UmaScreen> {
         pageContext: widget.pageContext,
         pageDescription: widget.pageDescription,
       );
-      final reply = '$overview\n\n$extra';
-      setState(() {
-        decision = UmaDecision(
-          userQuestion: question,
-          shortAnswer: reply,
-          spokenAnswer: reply,
-          level: UmaDecisionLevel.recommended,
-          reasons: const ['आज का पंचांग', 'सेव कुंडली / स्थान'],
-          checks: const ['उमा वास्तविक ऐप डेटा से उत्तर दे रही है।'],
-          action: 'राहुकाल, चौघड़िया, कुंडली या यात्रा भी पूछ सकते हैं।',
-        );
-        chatHistory.add({'role': 'uma', 'message': reply});
-        lastQuestion = question;
-        isProcessing = false;
-      });
-      await uma.speak(reply);
+      await finish('$overview\n\n$extra');
       return;
     }
 
@@ -219,125 +231,50 @@ class _UmaScreenState extends State<UmaScreen> {
       final appReply = await appIntelligence.answerData(question, appContext, pageContext: widget.pageContext, pageDescription: widget.pageDescription);
       final softwareReply = appIntelligence.answerSoftware(question);
       final dataQuestion = question.toLowerCase();
-      final asksApp = ['software', 'app', 'feature', 'मॉड्यूल', 'ऐप में', 'क्या data', 'क्या डेटा', 'saved', 'सेव', 'कुंडली', 'ग्रह', 'भाव', 'दशा', 'योग', 'दोष', 'नक्षत्र', 'अष्टकवर्ग', 'शड्बल', 'भावबल', 'अवस्था', 'गोचर', 'd1', 'd9', 'd60', 'kp', 'jaimini', 'लाल किताब'].any(dataQuestion.contains);
+      final asksApp = ['software', 'app', 'feature', 'मॉड्यूल', 'ऐप में', 'कुंडली', 'लग्न', 'महादशा', 'अष्टकवर्ग', 'शड्बल', 'd1', 'd9', 'd60', 'kp', 'jaimini', 'लाल किताब', 'जातक'].any(dataQuestion.contains);
       if (asksApp) {
         final reply = appIntelligence.isSoftwareQuestion(question) ? softwareReply : appReply;
-        setState(() {
-          decision = UmaDecision(
-            userQuestion: question,
-            shortAnswer: reply,
-            spokenAnswer: reply,
-            level: UmaDecisionLevel.recommended,
-            reasons: const ['Shakti Panchang app-aware context', 'उपलब्ध calculated/saved data का उपयोग'],
-            checks: const ['जहाँ वास्तविक chart data उपलब्ध है, UMA generic उत्तर की जगह उसी data को प्राथमिकता देती है।'],
-            action: 'आप किसी ग्रह, भाव, दशा, योग, दोष या module के बारे में अगला सवाल पूछ सकते हैं।',
-          );
-          chatHistory.add({'role': 'uma', 'message': reply});
-          lastQuestion = question;
-          isProcessing = false;
-        });
-        await uma.speak(reply);
+        await finish(reply);
         return;
       }
     }
 
-    // 1. Advanced Follow-up Context Memory Handling
     if (cmd != null && cmd.intent == UmaIntent.help && lastActivity != null) {
-      final follow = _advancedFollowUpReply(question);
-      setState(() {
-        decision = UmaDecision(
-          userQuestion: question,
-          shortAnswer: follow,
-          spokenAnswer: follow,
-          level: UmaDecisionLevel.recommended,
-          reasons: ['पिछला सक्रिय प्रसंग: $lastActivity', 'उमा की संवाद स्मृति (Memory Active)'],
-          checks: ['सटीक पंचांग गणना, स्थान और समयानुसार काल शुद्धि जांची गई है।'],
-          action: 'आप “क्यों?”, “सुबह?”, “कल?” या किसी अन्य मुहूर्त के बारे में आगे पूछ सकते हैं।',
-        );
-        chatHistory.add({'role': 'uma', 'message': follow});
-        isProcessing = false;
-      });
-      await uma.speak(follow);
+      await finish(_advancedFollowUpReply(question));
       return;
     }
 
     if (cmd == null) {
-      const errText = 'क्षما करें, उमा आपके इस प्रश्न को पूरी तरह समझ नहीं पाई। कृपया इसे पंचांग, मुहूर्त या यात्रा से संबंधित शब्दों में पूछें।';
-      setState(() {
-        chatHistory.add({'role': 'uma', 'message': errText});
-        isProcessing = false;
-      });
-      await uma.speak(errText);
+      await finish(await _liveOverview());
       return;
     }
 
-    // Help / unknown: give today's panchang instead of "विषय नहीं मिला".
     if (cmd.intent == UmaIntent.help) {
-      final reply = await _liveOverview();
-      setState(() {
-        decision = UmaDecision(
-          userQuestion: question,
-          shortAnswer: reply,
-          spokenAnswer: reply,
-          level: UmaDecisionLevel.recommended,
-          reasons: const ['सामान्य प्रश्न', 'आज का पंचांग'],
-          checks: const ['स्पष्ट विषय न मिले तो उमा वर्तमान डेटा बताती है।'],
-          action: 'राहुकाल, चौघड़िया, कुंडली या यात्रा पूछें।',
-        );
-        chatHistory.add({'role': 'uma', 'message': reply});
-        lastQuestion = question;
-        isProcessing = false;
-      });
-      await uma.speak(reply);
+      await finish(await _factualOrOverview(question));
       return;
     }
 
-    // 2. Non-activity Intent Handling with Contextual Intelligence
     if (cmd.intent != UmaIntent.activity) {
-      final reply = uma.contextualReply(question, cmd);
-      setState(() {
-        decision = UmaDecision(
-          userQuestion: question,
-          shortAnswer: reply,
-          spokenAnswer: reply,
-          level: UmaDecisionLevel.recommended,
-          reasons: ['विषय पहचान: ${cmd.intent.name}', 'वैदिक ज्योतिष नियमावली सक्रिय'],
-          checks: ['चुनी हुई तारीख और वर्तमान भौगोलिक स्थिति का उपयोग किया गया है।'],
-          action: 'आप इसी विषय पर कोई उप-प्रश्न या विवरण मांग सकते हैं।',
-        );
-        chatHistory.add({'role': 'uma', 'message': reply});
-        lastQuestion = question;
-        isProcessing = false;
-      });
-      await uma.speak(reply);
+      await finish(await _factualForIntent(cmd));
       return;
     }
 
     lastActivity = cmd.activity;
     lastQuestion = question;
 
-    // 3. Real-time Astronomical Engine Integration for Advanced Decision Making
-    try {
-      final p = await PanchangBoundaryService(astronomyEngine).calculate(widget.date);
-      final d = engine.decide(
-        question: question,
-        activity: cmd.activity,
-        when: widget.date,
-        panchang: p,
-        dishaShool: DishaService.avoided(widget.date),
-      );
-      
-      setState(() {
-        decision = d;
-        chatHistory.add({'role': 'uma', 'message': d.shortAnswer});
-        isProcessing = false;
-      });
-      await uma.speak(d.spokenAnswer);
+    final p = await PanchangBoundaryService(astronomyEngine).calculate(widget.date);
+    final d = engine.decide(
+      question: question,
+      activity: cmd.activity,
+      when: widget.date,
+      panchang: p,
+      dishaShool: DishaService.avoided(widget.date),
+    );
+    await finish('${d.spokenAnswer} ${d.reasons.take(4).join(' ')}');
     } catch (e) {
+      if (!mounted) return;
       setState(() => isProcessing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('उमा गणना त्रुटि: $e')),
-      );
+      await finish('उमा को इस प्रश्न पर गणना करते समय देर हो गई। कृपया फिर पूछें।');
     }
   }
 
@@ -384,6 +321,60 @@ class _UmaScreenState extends State<UmaScreen> {
     final saved = _appContext?.describeSavedData() ??
         'सेव कुंडली अभी नहीं खुली। कुंडली अध्याय में जन्म विवरण भरें।';
     return '$panchangLine $saved आप राहुकाल, चौघड़िया, कुंडली या यात्रा पूछ सकते हैं।';
+  }
+
+  String _hm(DateTime t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  Future<({SavedLocation? loc, SolarTimes solar, int weekday})> _placeSolar() async {
+    final loc = await LocationStore().selected();
+    final lat = loc?.latitude ?? 23.1765;
+    final lon = loc?.longitude ?? 75.7885;
+    final solar = SolarService.forDate(date: widget.date, latitude: lat, longitude: lon);
+    return (loc: loc, solar: solar, weekday: widget.date.weekday);
+  }
+
+  Future<String> _factualForIntent(UmaCommand cmd) async {
+    final ps = await _placeSolar();
+    final place = ps.loc?.name ?? 'उज्जैन';
+    switch (cmd.intent) {
+      case UmaIntent.rahu:
+        final w = InauspiciousService.daytime(ps.solar.sunrise, ps.solar.sunset, ps.weekday);
+        return 'आज $place में ${w.map((x) => '${x.title} ${_hm(x.start)} से ${_hm(x.end)} तक').join('। ')}। इन काल में नया शुभ कार्य न करें।';
+      case UmaIntent.choghadiya:
+        final day = ChoghadiyaService.day(ps.solar, ps.weekday);
+        final good = day.where((c) => c.nature == ChoghadiyaNature.auspicious).toList();
+        return 'आज $place के शुभ चौघड़िया: ${good.map((c) => '${c.name} ${_hm(c.start)}–${_hm(c.end)}').join(', ')}। अमृत, शुभ और लाभ में कार्य श्रेष्ठ हैं।';
+      case UmaIntent.dishashool:
+        final dir = DishaService.avoided(widget.date);
+        return 'आज दिशाशूल $dir दिशा में है। इस दिशा में नई यात्रा शुरू न करें। अन्य दिशाएँ सामान्यतः ठीक हैं।';
+      case UmaIntent.sunriseSunset:
+        final brahmaStart = ps.solar.sunrise.subtract(const Duration(minutes: 96));
+        final brahmaEnd = ps.solar.sunrise.subtract(const Duration(minutes: 48));
+        return 'आज $place में सूर्योदय ${_hm(ps.solar.sunrise)}, सूर्यास्त ${_hm(ps.solar.sunset)}। ब्रह्म मुहूर्त ${_hm(brahmaStart)} से ${_hm(brahmaEnd)} तक।';
+      case UmaIntent.panchang:
+      case UmaIntent.explanation:
+      case UmaIntent.help:
+      case UmaIntent.activity:
+        return _liveOverview();
+    }
+  }
+
+  Future<String> _factualOrOverview(String question) async {
+    final q = question.toLowerCase();
+    if (q.contains('राहु') || q.contains('यमगंड') || q.contains('गुलिक')) {
+      return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', question, intent: UmaIntent.rahu));
+    }
+    if (q.contains('चौघड़िया') || q.contains('choghadiya')) {
+      return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', question, intent: UmaIntent.choghadiya));
+    }
+    if (q.contains('दिशा') || q.contains('यात्रा')) {
+      return _factualForIntent(UmaCommand('यात्रा', question, intent: UmaIntent.dishashool));
+    }
+    if (q.contains('सूर्य')) {
+      return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', question, intent: UmaIntent.sunriseSunset));
+    }
+    return _liveOverview();
   }
 
   String _advancedFollowUpReply(String q) {
