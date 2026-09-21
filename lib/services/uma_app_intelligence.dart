@@ -56,13 +56,10 @@ class UmaAppIntelligence {
   String answerSoftware(String question) {
     final q = _normalize(question);
     if (_has(q, ['क्या क्या कर सकती', 'क्या कर सकते', 'features', 'feature', 'software', 'ऐप में क्या', 'app me kya', 'modules', 'मॉड्यूल'])) {
-      return 'मैं Shakti Panchang के मुख्य मॉड्यूल समझा सकती हूँ: ${moduleNames.join(', ')}। '
-          'कुंडली बनने के बाद मैं उसी जातक के ग्रह, भाव, नक्षत्र, दशा, योग-दोष, गोचर और उपलब्ध advanced reports को समझा सकती हूँ।';
+      return 'ऐप में ये सब है: ${moduleNames.take(12).join(', ')} और बाकी ज्योतिष मॉड्यूल। कुंडली बनने के बाद ग्रह, दशा, योग — वही बताती हूँ।';
     }
     if (_has(q, ['उमा क्या जानती', 'उमा को क्या पता', 'तुम क्या जानती', 'what do you know', 'know about app'])) {
-      return 'अभी मेरा app-aware स्तर तीन हिस्सों में है: (1) Shakti Panchang के उपलब्ध modules की knowledge, '
-          '(2) active KundaliData की वास्तविक गणना, और (3) saved Kundali profiles की सूची/मूल विवरण। '
-          'Unsaved form fields और Android notification queue मेरे पास अपने-आप उपलब्ध नहीं होते।';
+      return 'तीन बातें याद रखो: ऐप के पन्ने, तुम्हारी कुंडली की गणना, और सेव प्रोफाइल। जो फॉर्म भरा ही नहीं, वो मैं नहीं गढ़ती।';
     }
     if (_has(q, ['कुंडली कैसे', 'kundali kaise', 'कुंडली बन', 'kundali module'])) {
       return 'कुंडली मॉड्यूल में नाम, जन्म तिथि, जन्म समय और जन्म स्थान दर्ज करके गणना की जाती है। '

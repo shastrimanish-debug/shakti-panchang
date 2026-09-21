@@ -134,7 +134,7 @@ class _UmaScreenState extends State<UmaScreen> {
         await _safeAsk(_pageInfoQuestion);
       } else {
         try {
-          await uma.speak('नमस्ते! मैं उमा हूँ। आप मुझसे अपने शब्दों में सवाल पूछ सकते हैं।');
+          await uma.speak('राम राम! मैं उमा। पूछो, बता देती हूँ।');
         } catch (_) {
           // TTS is optional; text interaction remains available.
         }
@@ -154,7 +154,7 @@ class _UmaScreenState extends State<UmaScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => isProcessing = false);
-      const message = 'उमा को उत्तर तैयार करते समय एक अस्थायी समस्या आई। कृपया फिर से पूछें।';
+      const message = 'थोड़ी अड़चन आई। एक बार और पूछ लेना।';
       setState(() {
         decision = UmaDecision(
           userQuestion: question ?? input.text,
@@ -274,7 +274,7 @@ class _UmaScreenState extends State<UmaScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => isProcessing = false);
-      await finish('उमा को इस प्रश्न पर गणना करते समय देर हो गई। कृपया फिर पूछें।');
+      await finish('हिसाब लगाते-लगाते रुक गई। फिर पूछो, अभी बताती हूँ।');
     }
   }
 
@@ -381,15 +381,15 @@ class _UmaScreenState extends State<UmaScreen> {
     final a = lastActivity!;
     final lower = q.toLowerCase();
     if (lower.contains('क्यों') || lower.contains('kyu') || lower.contains('why')) {
-      return 'आपने $a के संबंध में कारण पूछा है। पंचांग और होरा शास्त्र के अनुसार, इस काल में ग्रहों की स्थिति और नक्षत्र प्रभाव के आधार पर यह निर्णय लिया गया है।';
+    return 'आपने $a के बारे में पूछा। शास्त्र के हिसाब से ग्रह-नक्षत्र देखकर यही कहा।';
     }
     if (lower.contains('सुबह') || lower.contains('morning')) {
-      return 'समझ गई। $a के लिए प्रातःकालीन बेला अधिक ऊर्जावान और शुभ मानी जाती है। मैं तदनुसार सर्वोत्तम प्रातःकालीन चौघड़िया विंडो प्राथमिकता में रख रही हूँ।';
+      return 'सुबह की बात समझ गई। $a के लिए प्रातः अमृत या शुभ चौघड़िया रखना अच्छा है।';
     }
     if (lower.contains('कल') || lower.contains('tomorrow')) {
-      return 'ठीक है, अब मैं $a के लिए कल के पंचांग और सूर्योदय गणना को संदर्भ मानकर चल रही हूँ।';
+      return 'ठीक है, कल का पंचांग देखती हूँ $a के लिए।';
     }
-    return 'मैंने आपके प्रश्न को पिछले प्रसंग "$a" के साथ जोड़ दिया है। आप बेझिझक समय, कारण या दिशा के बारे में पूछ सकती हैं।';
+    return 'पहले वाले सवाल से जोड़ रही हूँ — $a। समय या दिशा और पूछना हो तो पूछो।';
   }
 
   Future<void> voiceAsk() async {
@@ -458,10 +458,10 @@ class _UmaScreenState extends State<UmaScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('उमा से संवाद करें',
+                      const Text('उमा से बात करो',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF7A3E00))),
                       const SizedBox(height: 6),
-                      const Text('मुहूर्त, यात्रा, कार्यसिद्धि या ज्योतिषीय संशय पूछें...', style: TextStyle(fontSize: 13, color: Colors.black54)),
+                      const Text('सीधी भाषा में पूछो — राहुकाल, कुंडली, यात्रा, मुहूर्त…', style: TextStyle(fontSize: 13, color: Colors.black54)),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
@@ -485,7 +485,7 @@ class _UmaScreenState extends State<UmaScreen> {
                         minLines: 2,
                         maxLines: 4,
                         decoration: InputDecoration(
-                          hintText: 'उदा: कल व्यापार की शुरुआत के लिए कौन सा समय सबसे अच्छा रहेगा?',
+                          hintText: 'जैसे: आज निकलना ठीक है? गाड़ी कब लूँ?',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           filled: true,
                           fillColor: const Color(0xFFFFFBF4),
@@ -504,7 +504,7 @@ class _UmaScreenState extends State<UmaScreen> {
                               icon: isProcessing 
                                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                                 : const Icon(Icons.auto_awesome),
-                              label: Text(isProcessing ? 'उमा सोच रही हैं...' : 'उमा से पूछें'),
+                              label: Text(isProcessing ? 'उमा सोच रही है…' : 'उमा से पूछो'),
                             ),
                           ),
                           const SizedBox(width: 10),

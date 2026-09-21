@@ -120,11 +120,10 @@ class _YatraScreenState extends State<YatraScreen> {
     final r = result;
     final a = advice;
     if (r == null || a == null) return;
+    final dest = toName.text.isEmpty ? 'तुम्हारे शहर' : toName.text;
     await uma.speak(
-      'उमा बता रही हूँ। ${widget.fromName} से ${toName.text.isEmpty ? 'आपके गंतव्य' : toName.text} की दिशा ${r.direction} है। '
-      'इस दिन दिशाशूल ${DishaService.avoided(selectedDate)} दिशा में है। '
-      '${a.summary} '
-      'मैंने बेहतर चौघड़िया भी नीचे दिए हैं।'
+      'सुनो। ${widget.fromName} से $dest ${r.direction} दिशा में है। '
+      'आज दिशाशूल ${DishaService.avoided(selectedDate)} में है। ${a.summary}',
     );
   }
 

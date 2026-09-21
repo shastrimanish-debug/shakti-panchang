@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import 'kundali_screen.dart';
 import 'panchang_detail_screen.dart'; 
@@ -12,8 +11,9 @@ import 'shubh_samay_screen.dart';
 
 import '../models/panchang_models.dart';
 import '../services/solar_service.dart'; 
-import '../services/vedic_panchang_service.dart'; 
+import '../services/astronomical_panchang_service.dart';
 import '../services/panchang_boundary_service.dart';
+import '../services/uma_voice.dart';
 import '../services/disha_service.dart';
 import '../services/xalen_service.dart';
 
@@ -30,28 +30,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final FlutterTts _flutterTts = FlutterTts();
-
   @override
   void initState() {
     super.initState();
-    _initTts();
-  }
-
-  Future<void> _initTts() async {
-    await _flutterTts.setLanguage("hi-IN");
-    await _flutterTts.setSpeechRate(0.45);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
-  }
-
-  Future<void> _speak(String text) async {
-    await _flutterTts.stop();
-    await _flutterTts.speak(text);
+    UmaVoice.instance.init();
   }
 
   void _openUmaChat() {
-    _speak("नमस्ते! शक्ति पंचांग में आपका स्वागत है।");
+    UmaVoice.instance.speak('राम राम! शक्ति पंचांग में स्वागत है।');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => UmaScreen(date: DateTime.now())),
@@ -60,10 +46,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openPanchang() async {
     final now = DateTime.now();
-    final panchangService = VedicPanchangService();
-    final realData = await panchangService.calculate(date: now, latitude: 23.1765, longitude: 75.7885);
+    final realData = await AstronomicalPanchangService().calculate(
+      date: now, latitude: 23.1765, longitude: 75.7885,
+    );
     if (!mounted) return;
-    Navigator.push(context, MaterialPageRoute(builder: (_) => PanchangDetailScreen(date: now, data: realData)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PanchangDetailScreen(
+          date: now, data: realData, lat: 23.1765, lon: 75.7885, place: 'उज्जैन',
+        ),
+      ),
+    );
   }
 
   void _openMuhurat() {
@@ -78,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _flutterTts.stop();
+    UmaVoice.instance.stop();
     super.dispose();
   }
 
