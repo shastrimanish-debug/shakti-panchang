@@ -23,9 +23,9 @@ class PanchangDetailScreen extends StatefulWidget {
     super.key,
     required this.date,
     required this.data,
-    required this.lat,
-    required this.lon,
-    required this.place,
+    this.lat = 23.1765,
+    this.lon = 75.7885,
+    this.place = 'उज्जैन',
   });
 
   @override

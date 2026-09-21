@@ -54,7 +54,11 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => PanchangDetailScreen(
-          date: now, data: realData, lat: 23.1765, lon: 75.7885, place: 'उज्जैन',
+          date: now,
+          data: realData,
+          lat: 23.1765,
+          lon: 75.7885,
+          place: 'उज्जैन',
         ),
       ),
     );

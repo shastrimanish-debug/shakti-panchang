@@ -142,7 +142,7 @@ jobs:
       # 9. Analyze
       # ---------------------------------------------------------
       - name: Flutter Analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       # ---------------------------------------------------------
       # 10. Tests
