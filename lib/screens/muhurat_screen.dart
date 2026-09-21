@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/panchang_models.dart';
 import '../services/muhurat_engine.dart';
+import '../services/disha_service.dart';
 
 class MuhuratScreen extends StatefulWidget {
   final SolarTimes solar;
@@ -17,8 +18,9 @@ class MuhuratScreen extends StatefulWidget {
 }
 
 class _MuhuratScreenState extends State<MuhuratScreen> {
-  MuhuratActivity activity = MuhuratActivity.naming;
+  MuhuratActivity activity = MuhuratActivity.general;
   final engine = MuhuratEngine();
+  int tab = 0;
 
   String label(MuhuratActivity a) => switch (a) {
         MuhuratActivity.general => 'सामान्य शुभ कार्य',
@@ -32,97 +34,90 @@ class _MuhuratScreenState extends State<MuhuratScreen> {
         MuhuratActivity.marriage => 'विवाह',
       };
 
-  String detail(MuhuratActivity a) => switch (a) {
-        MuhuratActivity.general => 'सामान्य कार्यों के लिए उपलब्ध पारंपरिक शुभ विंडो',
-        MuhuratActivity.travel => 'यात्रा से पहले दिशाशूल और यात्रा-दिशा जरूर जाँचें',
-        MuhuratActivity.business => 'नया व्यापार/लेन-देन के लिए उपयोगी विंडो',
-        MuhuratActivity.vehiclePurchase => 'वाहन खरीद/पूजन के लिए उपयोगी विंडो',
-        MuhuratActivity.property => 'भूमि/प्रॉपर्टी संबंधी कार्य के लिए उपयोगी विंडो',
-        MuhuratActivity.houseEntry => 'गृह प्रवेश के लिए प्राथमिक समय-विंडो',
-        MuhuratActivity.education => 'अध्ययन/विद्यारंभ के लिए प्राथमिक समय-विंडो',
-        MuhuratActivity.naming => 'नामकरण के लिए प्राथमिक समय-विंडो',
-        MuhuratActivity.marriage => 'विवाह के लिए प्रारंभिक समय-विंडो',
-      };
-
   @override
   Widget build(BuildContext context) {
-    final list = engine.forActivity(
+    final daily = engine.dailyNamed(solar: widget.solar, weekday: widget.date.weekday);
+    final work = engine.forActivity(
       activity: activity,
       solar: widget.solar,
       weekday: widget.date.weekday,
     );
+    final shool = DishaService.avoided(widget.date);
+    final tyajyaTitles = {'राहु काल', 'यमगण्ड', 'गुलिक काल', 'निशीथ काल'};
 
     return Scaffold(
-      appBar: AppBar(title: const Text('🙏 काम के अनुसार मुहूर्त')),
+      appBar: AppBar(title: const Text('आज के वैदिक मुहूर्त')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          DropdownButtonFormField<MuhuratActivity>(
-            initialValue: activity,
-            decoration: const InputDecoration(
-              labelText: 'किस काम के लिए?',
-              border: OutlineInputBorder(),
-            ),
-            items: MuhuratActivity.values
-                .map(
-                  (a) => DropdownMenuItem(
-                    value: a,
-                    child: Text(label(a)),
-                  ),
-                )
-                .toList(),
-            onChanged: (v) {
-              if (v == null) return;
-              setState(() => activity = v);
-            },
+          Row(
+            children: [
+              _tabBtn(0, 'आज के मुहूर्त'),
+              const SizedBox(width: 8),
+              _tabBtn(1, 'कार्य अनुसार'),
+            ],
           ),
           const SizedBox(height: 12),
           Card(
-            elevation: 0,
+            color: const Color(0xFFFFF4DC),
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               child: Text(
-                detail(activity),
+                'दिशाशूल आज: $shool दिशा। सूर्योदय ${_fmt(widget.solar.sunrise)} · सूर्यास्त ${_fmt(widget.solar.sunset)}',
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          ...list.map(
-            (m) => Card(
-              child: ListTile(
-                leading: const CircleAvatar(
-                  child: Icon(Icons.auto_awesome),
-                ),
-                title: Text(
-                  m.title,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: Text(
-                  '${_fmt(m.start)} – ${_fmt(m.end)}\n${m.description}',
-                ),
+          const SizedBox(height: 10),
+          if (tab == 0)
+            ...daily.map((m) => _row(m, tyajyaTitles.contains(m.title)))
+          else ...[
+            DropdownButtonFormField<MuhuratActivity>(
+              initialValue: activity,
+              decoration: const InputDecoration(
+                labelText: 'किस काम के लिए?',
+                border: OutlineInputBorder(),
               ),
+              items: MuhuratActivity.values
+                  .map((a) => DropdownMenuItem(value: a, child: Text(label(a))))
+                  .toList(),
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() => activity = v);
+              },
             ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'महत्वपूर्ण: यह स्क्रीन अब काम के अनुसार अलग-अलग समय-विंडो दिखाती है। '
-            'विवाह, गृह प्रवेश, नामकरण, प्रॉपर्टी आदि के लिए अंतिम शास्त्रीय मुहूर्त '
-            'तय करने में तिथि, नक्षत्र, योग, करण, लग्न, चंद्रबल, ताराबल और क्षेत्रीय '
-            'नियम भी लागू होने चाहिए। इन्हें अगली पूर्ण मुहूर्त engine में जोड़ा जाएगा।',
-            style: TextStyle(fontSize: 12, color: Colors.black54),
-          ),
-          const SizedBox(height: 24),
-          const Center(
-            child: Text(
-              'Powered by SHIV SHAKTI',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+            const SizedBox(height: 12),
+            ...work.map((m) => _row(m, tyajyaTitles.contains(m.title))),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _tabBtn(int i, String text) {
+    final on = tab == i;
+    return Expanded(
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: on ? const Color(0xFF5C3A21) : const Color(0xFFF4E8D1),
+          foregroundColor: on ? Colors.white : const Color(0xFF5C3A21),
+        ),
+        onPressed: () => setState(() => tab = i),
+        child: Text(text),
+      ),
+    );
+  }
+
+  Widget _row(MuhuratWindow m, bool tyajya) {
+    return Card(
+      color: tyajya ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9),
+      child: ListTile(
+        title: Text(m.title, style: const TextStyle(fontWeight: FontWeight.w900)),
+        subtitle: Text(m.description),
+        trailing: Text(
+          m.start == m.end ? _fmt(m.start) : '${_fmt(m.start)}–${_fmt(m.end)}',
+          style: const TextStyle(fontWeight: FontWeight.w900),
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../services/festival_service.dart';
 
 class FestivalsScreen extends StatelessWidget {
@@ -7,35 +8,42 @@ class FestivalsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = FestivalService.upcoming(date, count: 20);
+    final fmt = DateFormat('EEE, d MMMM yyyy', 'hi_IN');
+    final upcoming = FestivalService.upcoming(date, count: 12);
+    final yearItems = FestivalService.forYear(date.year);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('📅 पर्व और व्रत')),
+      appBar: AppBar(title: const Text('हिंदी त्योहार तिथियाँ')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(14),
-              child: Text(
-                'एकादशी, पूर्णिमा, अमावस्या और प्रमुख पर्व एक जगह। '
-                'विशेष व्रत/पूजा के exact समय के लिए चुनी हुई location के पंचांग नियम देखें।',
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...items.map((x) => Card(
+          const Text('आगामी पर्व', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 8),
+          ...upcoming.map((x) => Card(
+            color: const Color(0xFFFFF4DC),
             child: ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.event)),
+              leading: CircleAvatar(
+                backgroundColor: const Color(0xFFB56A00),
+                child: Text('${x.date.day}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+              ),
               title: Text(x.name, style: const TextStyle(fontWeight: FontWeight.w900)),
-              subtitle: Text('${x.date.day.toString().padLeft(2,'0')}-${x.date.month.toString().padLeft(2,'0')}-${x.date.year} • ${x.type}'),
+              subtitle: Text('${fmt.format(x.date)} • ${x.type}'),
             ),
           )),
-          const SizedBox(height: 18),
-          const Text(
-            '2026 calendar data is based on a location-specific Hindu calendar reference; '
-            'lunar observances can differ by location and tradition.',
-            style: TextStyle(fontSize: 12, color: Colors.black54),
-          ),
+          const SizedBox(height: 16),
+          Text('${date.year} की पूरी सूची', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 8),
+          ...yearItems.map((x) => Card(
+            child: ListTile(
+              dense: true,
+              title: Text(x.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+              trailing: Text(
+                DateFormat('d MMM', 'hi_IN').format(x.date),
+                style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF8C6239)),
+              ),
+              subtitle: Text(x.type),
+            ),
+          )),
         ],
       ),
     );

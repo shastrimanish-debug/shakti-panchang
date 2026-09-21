@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class PlaceResult {
   final String displayName;
@@ -63,27 +63,25 @@ class GeocodingService {
         'q':q,'format':'jsonv2','limit':'8','countrycodes':'in',
         'addressdetails':'1','accept-language':'en,hi',
       });
-      final client=HttpClient()..userAgent='ShaktiPanchang/1.0 (location search)';
-      try {
-        final request=await client.getUrl(uri).timeout(const Duration(seconds:6));
-        request.headers.set(HttpHeaders.acceptHeader,'application/json');
-        final response=await request.close().timeout(const Duration(seconds:6));
-        if(response.statusCode!=HttpStatus.ok) return const [];
-        final decoded=jsonDecode(await response.transform(utf8.decoder).join());
-        if(decoded is! List) return const [];
-        final remote=<PlaceResult>[];
-        for(final item in decoded) {
-          if(item is! Map) continue;
-          final lat=double.tryParse('${item['lat']??''}');
-          final lon=double.tryParse('${item['lon']??''}');
-          final display='${item['display_name']??''}'.trim();
-          if(lat!=null && lon!=null && display.isNotEmpty) {
-            remote.add(PlaceResult(displayName:display,latitude:lat,longitude:lon));
-          }
+      final response = await http.get(uri, headers: {
+        'User-Agent': 'ShaktiPanchang/1.0 (location search)',
+        'Accept': 'application/json',
+      }).timeout(const Duration(seconds:6));
+      if(response.statusCode!=200) return const [];
+      final decoded=jsonDecode(response.body);
+      if(decoded is! List) return const [];
+      final remote=<PlaceResult>[];
+      for(final item in decoded) {
+        if(item is! Map) continue;
+        final lat=double.tryParse('${item['lat']??''}');
+        final lon=double.tryParse('${item['lon']??''}');
+        final display='${item['display_name']??''}'.trim();
+        if(lat!=null && lon!=null && display.isNotEmpty) {
+          remote.add(PlaceResult(displayName:display,latitude:lat,longitude:lon));
         }
-        _cache[key]=remote;
-        return remote;
-      } finally { client.close(force:true); }
+      }
+      _cache[key]=remote;
+      return remote;
     } catch (_) { return const []; }
   }
 

@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart'; // तेरे pubspec में यह पहले से है
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
 const Color _bhojBg = Color(0xFFF4E8D1);
 const Color _bhojCard = Color(0xFFFAF2E4);
@@ -56,13 +56,10 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   Future<void> _fetchPlacesFromAPI(String query) async {
     try {
       final url = Uri.parse('https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&addressdetails=1&limit=15');
-      final request = await HttpClient().getUrl(url);
-      request.headers.set('User-Agent', 'ShaktiPanchangApp/1.0'); // API ब्लॉक न हो इसलिए
-      final response = await request.close();
+      final response = await http.get(url, headers: {'User-Agent': 'ShaktiPanchangApp/1.0'});
 
       if (response.statusCode == 200) {
-        final responseBody = await response.transform(utf8.decoder).join();
-        final List data = jsonDecode(responseBody);
+        final List data = jsonDecode(response.body);
         
         if (!mounted) return;
         setState(() {
@@ -120,12 +117,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
       // GPS कोऑर्डिनेट्स से शहर का नाम निकालने का प्रयास (Reverse Geocoding)
       try {
          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?lat=${position.latitude}&lon=${position.longitude}&format=json');
-         final req = await HttpClient().getUrl(url);
-         req.headers.set('User-Agent', 'ShaktiPanchangApp/1.0');
-         final res = await req.close();
+         final res = await http.get(url, headers: {'User-Agent': 'ShaktiPanchangApp/1.0'});
          if (res.statusCode == 200) {
-           final body = await res.transform(utf8.decoder).join();
-           final data = jsonDecode(body);
+           final data = jsonDecode(res.body);
            if (data['name'] != null) {
              placeName = data['name'];
            }
