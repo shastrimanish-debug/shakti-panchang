@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openUmaChat() {
-    UmaVoice.instance.speak('राम राम! शक्ति पंचांग में स्वागत है।');
+    UmaVoice.instance.speak('नमस्ते, शक्ति पंचांग में स्वागत है।');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => UmaScreen(date: DateTime.now())),

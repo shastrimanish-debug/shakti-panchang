@@ -54,14 +54,14 @@ class UmaAiService {
       case UmaIntent.activity:
         return '${command.activity} के लिए शुभ बेला देखती हूँ।';
       case UmaIntent.help:
-        return 'राम राम, मैं उमा। राहुकाल, चौघड़िया, कुंडली, यात्रा — जो मन हो पूछ लो।';
+        return 'नमस्ते, मैं उमा हूँ। राहुकाल, चौघड़िया, कुंडली, यात्रा — जो पूछना हो बोलिए।';
     }
   }
 
   String answerIntent(String q) {
     final command = const UmaCommandRouter().route(q);
     if (command == null) {
-      return 'राम राम, मैं उमा। जो पूछना हो, सीधे पूछो।';
+      return 'नमस्ते, मैं उमा हूँ। जो पूछना हो, सीधे बोलिए।';
     }
     return contextualReply(q, command);
   }

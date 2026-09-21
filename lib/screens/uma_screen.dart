@@ -134,7 +134,7 @@ class _UmaScreenState extends State<UmaScreen> {
         await _safeAsk(_pageInfoQuestion);
       } else {
         try {
-          await uma.speak('राम राम! मैं उमा। पूछो, बता देती हूँ।');
+          await uma.speak('नमस्ते, मैं उमा हूँ। बोलिए, क्या जानना है?');
         } catch (_) {
           // TTS is optional; text interaction remains available.
         }

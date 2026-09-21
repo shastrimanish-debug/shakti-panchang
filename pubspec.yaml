@@ -1,7 +1,7 @@
 name: shakti_panchang
 description: Shakti Panchang with Uma voice assistant, Choghadiya, Muhurat and Disha Shool.
 publish_to: "none"
-version: 1.2.3+42
+version: 1.2.4+43
 
 environment:
   sdk: ">=3.11.0 <4.0.0"
@@ -15,6 +15,8 @@ dependencies:
   http: ^1.5.0
   page_flip: ^0.2.5+1
   flutter_tts: ^4.2.5
+  audioplayers: ^6.5.0
+  web: ^1.1.1
   speech_to_text: ^7.4.0
   shared_preferences: ^2.5.3
   path_provider: ^2.1.5
