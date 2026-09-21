@@ -6,16 +6,15 @@ import 'festivals_screen.dart';
 import 'kundali_screen.dart';
 import 'muhurat_screen.dart';
 import 'reminder_screen.dart';
-import 'shubh_samay_screen.dart';
 import 'yatra_screen.dart';
 import 'panchang_detail_screen.dart';
 import 'premium_screen.dart';
 import 'accuracy_screen.dart';
-import '../services/vedic_panchang_service.dart';
+import 'choghadiya_screen.dart';
+import 'location_search_screen.dart';
+import '../services/astronomical_panchang_service.dart';
+import '../models/astronomical_panchang.dart';
 import '../services/solar_service.dart';
-import '../services/panchang_boundary_service.dart';
-import '../services/xalen_service.dart';
-import '../services/disha_service.dart';
 import '../services/location_store.dart';
 import '../models/panchang_models.dart';
 import 'uma_screen.dart';
@@ -40,7 +39,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   int _page = 0;
   int _bookStart = 0;
   SavedLocation? _location;
-  Future<dynamic>? _panchangFuture;
+  Future<AstronomicalPanchang>? _panchangFuture;
   String? _panchangCacheKey;
   bool _openingPanchang = false;
 
@@ -89,9 +88,11 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       })),
       KeyedSubtree(key: const ValueKey('shubh'), child: _sectionPage(context, 'शुभ समय', 'चौघड़िया • राहुकाल • यमगण्ड • गुलिक', Icons.timer, () async {
         final now = DateTime.now();
-        final p = await PanchangBoundaryService(AstronomyEngineService()).calculate(now);
-        if (!context.mounted) return;
-        await _openRoute(ShubhSamayScreen(date: now, panchang: p, dishaShool: DishaService.avoided(now)));
+        final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
+        await _openRoute(ChoghadiyaScreen(
+          date: now,
+          solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise),
+        ));
       })),
       KeyedSubtree(key: const ValueKey('reminder'), child: _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
         await _openRoute(const ReminderScreen());
@@ -104,8 +105,13 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         backgroundColor: _brown,
         foregroundColor: Colors.white,
         centerTitle: true,
-        title: const Text('शक्ति पंचांग • वैदिक ग्रंथ', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: Text('शक्ति पंचांग • ${_place}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
         actions: [
+          IconButton(
+            tooltip: 'स्थान',
+            icon: const Icon(Icons.place_outlined),
+            onPressed: _pickLocation,
+          ),
           IconButton(
             tooltip: 'गणना जाँच',
             icon: const Icon(Icons.science_outlined),
@@ -230,14 +236,14 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   String _panchangKey(DateTime date) =>
       '${date.year}-${date.month}-${date.day}|${_lat.toStringAsFixed(6)}|${_lon.toStringAsFixed(6)}';
 
-  Future<dynamic> _calculatePanchangCached() {
+  Future<AstronomicalPanchang> _calculatePanchangCached() {
     final now = DateTime.now();
     final key = _panchangKey(now);
     if (_panchangFuture != null && _panchangCacheKey == key) {
       return _panchangFuture!;
     }
     _panchangCacheKey = key;
-    _panchangFuture = VedicPanchangService().calculate(
+    _panchangFuture = AstronomicalPanchangService().calculate(
       date: now,
       latitude: _lat,
       longitude: _lon,
@@ -277,9 +283,11 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         return;
       case 6:
         final now = DateTime.now();
-        final p = await PanchangBoundaryService(AstronomyEngineService()).calculate(now);
-        if (!mounted) return;
-        await _openRoute(ShubhSamayScreen(date: now, panchang: p, dishaShool: DishaService.avoided(now)));
+        final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
+        await _openRoute(ChoghadiyaScreen(
+          date: now,
+          solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise),
+        ));
         return;
       case 7:
         await _openRoute(const ReminderScreen());
@@ -295,12 +303,13 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       final now = DateTime.now();
       final data = await _calculatePanchangCached();
       if (!mounted) return;
-
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute(
-          builder: (_) => PanchangDetailScreen(date: now, data: data),
-        ),
-      );
+      await _openRoute(PanchangDetailScreen(
+        date: now,
+        data: data,
+        lat: _lat,
+        lon: _lon,
+        place: _place,
+      ));
     } catch (e) {
       if (!mounted) return;
       _panchangFuture = null;
@@ -339,6 +348,28 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         state.goToPage(returnPage);
       }
     });
+  }
+
+  Future<void> _pickLocation() async {
+    final result = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(builder: (_) => const LocationSearchScreen()),
+    );
+    if (result is! Map || !mounted) return;
+    final loc = SavedLocation(
+      name: '${result['name'] ?? 'स्थान'}',
+      latitude: (result['lat'] as num?)?.toDouble() ?? _lat,
+      longitude: (result['lng'] as num?)?.toDouble() ?? _lon,
+    );
+    await LocationStore().save(loc);
+    await LocationStore().setSelected(loc);
+    if (!mounted) return;
+    setState(() {
+      _location = loc;
+      _panchangFuture = null;
+      _panchangCacheKey = null;
+    });
+    _primePanchang();
   }
 
   Future<void> _openUma(String title, String description) async {
