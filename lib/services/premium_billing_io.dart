@@ -4,6 +4,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/app_config.dart';
+import 'license_service.dart';
 
 /// Google Play subscription integration for Shakti Panchang Premium.
 ///
@@ -137,6 +138,7 @@ class PremiumBillingService {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           await _setPremiumActive(true);
+          await LicenseService.instance.markPaid();
           break;
         case PurchaseStatus.error:
           errorMessage = purchase.error?.message ?? 'Purchase failed.';

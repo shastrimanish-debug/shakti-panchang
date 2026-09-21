@@ -16,6 +16,7 @@ import '../services/location_store.dart';
 import '../services/solar_service.dart';
 import '../services/choghadiya_service.dart';
 import '../services/inauspicious_service.dart';
+import '../services/festival_service.dart';
 
 class UmaScreen extends StatefulWidget {
   final DateTime date;
@@ -44,9 +45,7 @@ class _UmaScreenState extends State<UmaScreen> {
   String? lastQuestion;
   bool isProcessing = false;
 
-  String get _pageInfoQuestion => widget.pageContext == null
-      ? 'मेरा पूरा data बताओ'
-      : 'मैं अभी ${widget.pageContext} पेज पर हूँ। इस पेज की पूरी जानकारी, उपलब्ध data, मुख्य बिंदु और इसे कैसे समझें बताओ।';
+  String get _pageInfoQuestion => 'इस पन्ने की जानकारी';
   
   // Advanced Conversational History for Memory
   final List<Map<String, String>> chatHistory = [];
@@ -197,9 +196,9 @@ class _UmaScreenState extends State<UmaScreen> {
           shortAnswer: reply,
           spokenAnswer: reply,
           level: UmaDecisionLevel.recommended,
-          reasons: const ['प्रत्येक प्रश्न का स्वतंत्र उत्तर'],
-          checks: const ['अगला सवाल तुरंत पूछ सकते हैं'],
-          action: 'राहुकाल, चौघड़िया, कुंडली, यात्रा या मुहूर्त पूछें।',
+          reasons: const ['विषय के अनुसार अलग उत्तर'],
+          checks: const ['अगला सवाल तुरंत पूछ सकते हो'],
+          action: 'राहुकाल, दशा, त्योहार, यात्रा या कुंडली पूछो।',
         );
         chatHistory.add({'role': 'uma', 'message': reply});
         lastQuestion = question;
@@ -209,54 +208,57 @@ class _UmaScreenState extends State<UmaScreen> {
     }
 
     try {
-    // Personal data / "मेरा डेटा बताओ"
     if (_isPersonalDataQuestion(question)) {
-      final overview = await _liveOverview();
-      final appContext = _appContext ??
-          await appIntelligence.loadSavedContext(active: _activeKundali);
-      _appContext = appContext;
       final extra = await appIntelligence.answerData(
         question,
-        appContext,
+        _appContext ?? await appIntelligence.loadSavedContext(active: _activeKundali),
         pageContext: widget.pageContext,
         pageDescription: widget.pageDescription,
       );
-      await finish('$overview\n\n$extra');
+      await finish(extra);
       return;
     }
 
-    // 0. App-aware UMA: answer from actual saved/calculated app data first.
-    final appContext = _appContext;
-    if (appContext != null) {
-      final appReply = await appIntelligence.answerData(question, appContext, pageContext: widget.pageContext, pageDescription: widget.pageDescription);
-      final softwareReply = appIntelligence.answerSoftware(question);
-      final dataQuestion = question.toLowerCase();
-      final asksApp = ['software', 'app', 'feature', 'मॉड्यूल', 'ऐप में', 'कुंडली', 'लग्न', 'महादशा', 'अष्टकवर्ग', 'शड्बल', 'd1', 'd9', 'd60', 'kp', 'jaimini', 'लाल किताब', 'जातक'].any(dataQuestion.contains);
-      if (asksApp) {
-        final reply = appIntelligence.isSoftwareQuestion(question) ? softwareReply : appReply;
-        await finish(reply);
+    switch (cmd.intent) {
+      case UmaIntent.rahu:
+      case UmaIntent.choghadiya:
+      case UmaIntent.dishashool:
+      case UmaIntent.sunriseSunset:
+        await finish(await _factualForIntent(cmd));
         return;
-      }
-    }
-
-    if (cmd != null && cmd.intent == UmaIntent.help && lastActivity != null) {
-      await finish(_advancedFollowUpReply(question));
-      return;
-    }
-
-    if (cmd == null) {
-      await finish(await _liveOverview());
-      return;
-    }
-
-    if (cmd.intent == UmaIntent.help) {
-      await finish(await _factualOrOverview(question));
-      return;
-    }
-
-    if (cmd.intent != UmaIntent.activity) {
-      await finish(await _factualForIntent(cmd));
-      return;
+      case UmaIntent.panchang:
+        await finish(await _liveOverview());
+        return;
+      case UmaIntent.festivals:
+        await finish(_festivalAnswer());
+        return;
+      case UmaIntent.page:
+        await finish(await _pageAnswer());
+        return;
+      case UmaIntent.dasha:
+      case UmaIntent.sadesati:
+      case UmaIntent.graha:
+      case UmaIntent.kp:
+      case UmaIntent.jaimini:
+      case UmaIntent.kundali:
+      case UmaIntent.saved:
+        await finish(await _kundaliTopic(cmd.intent, question));
+        return;
+      case UmaIntent.explanation:
+        await finish(uma.contextualReply(question, cmd));
+        return;
+      case UmaIntent.help:
+        if (lastActivity != null) {
+          await finish(_advancedFollowUpReply(question));
+          return;
+        }
+        await finish(
+          'मैं उमा। पंचांग तभी बताऊँगी जब पंचांग पूछोगे। '
+          'राहुकाल, चौघड़िया, दशा, ग्रह, त्योहार, दिशाशूल, कुंडली — विषय बोलो।',
+        );
+        return;
+      case UmaIntent.activity:
+        break;
     }
 
     lastActivity = cmd.activity;
@@ -356,25 +358,63 @@ class _UmaScreenState extends State<UmaScreen> {
       case UmaIntent.explanation:
       case UmaIntent.help:
       case UmaIntent.activity:
+      case UmaIntent.dasha:
+      case UmaIntent.sadesati:
+      case UmaIntent.graha:
+      case UmaIntent.kp:
+      case UmaIntent.jaimini:
+      case UmaIntent.festivals:
+      case UmaIntent.kundali:
+      case UmaIntent.saved:
+      case UmaIntent.page:
         return _liveOverview();
     }
   }
 
-  Future<String> _factualOrOverview(String question) async {
-    final q = question.toLowerCase();
-    if (q.contains('राहु') || q.contains('यमगंड') || q.contains('गुलिक')) {
-      return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', question, intent: UmaIntent.rahu));
+  Future<String> _kundaliTopic(UmaIntent intent, String question) async {
+    final ctx = _appContext ??
+        await appIntelligence.loadSavedContext(active: _activeKundali);
+    _appContext = ctx;
+    if (intent == UmaIntent.saved) {
+      return ctx.describeSavedData();
     }
-    if (q.contains('चौघड़िया') || q.contains('choghadiya')) {
-      return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', question, intent: UmaIntent.choghadiya));
+    if (_activeKundali == null && ctx.savedProfiles.isEmpty) {
+      return 'यह कुंडली वाला सवाल है, पंचांग नहीं। पहले कुंडली अध्याय में जन्म तिथि-समय-स्थान भरें, फिर दशा, ग्रह या साढ़ेसाती पूछें।';
     }
-    if (q.contains('दिशा') || q.contains('यात्रा')) {
-      return _factualForIntent(UmaCommand('यात्रा', question, intent: UmaIntent.dishashool));
+    return appIntelligence.answerData(
+      question,
+      ctx,
+      pageContext: widget.pageContext,
+      pageDescription: widget.pageDescription,
+    );
+  }
+
+  String _festivalAnswer() {
+    final up = FestivalService.upcoming(DateTime.now(), count: 6);
+    if (up.isEmpty) return 'त्योहार सूची तैयार नहीं हुई। व्रत एवं त्योहार अध्याय खोलो।';
+    return 'आने वाले पर्व: ${up.map((f) => '${f.name} (${f.date.day}/${f.date.month})').join(', ')}। पूरा साल त्योहार अध्याय में है।';
+  }
+
+  Future<String> _pageAnswer() async {
+    final title = widget.pageContext ?? 'ग्रंथ';
+    switch (title) {
+      case 'पंचांग':
+        return _liveOverview();
+      case 'कुंडली':
+        return _kundaliTopic(UmaIntent.kundali, 'कुंडली');
+      case 'शुभ मुहूर्त':
+        return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', 'मुहूर्त', intent: UmaIntent.sunriseSunset));
+      case 'यात्रा':
+        return _factualForIntent(UmaCommand('यात्रा', 'दिशाशूल', intent: UmaIntent.dishashool));
+      case 'व्रत एवं त्योहार':
+        return _festivalAnswer();
+      case 'शुभ समय':
+        return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', 'चौघड़िया', intent: UmaIntent.choghadiya));
+      case 'रिमाइंडर':
+        return 'रिमाइंडर अध्याय में व्रत और शुभ बेला की सूचना सेट करो। यह पंचांग नहीं है।';
+      default:
+        return '$title अध्याय: ${widget.pageDescription ?? 'ग्रंथ का पन्ना'}। पंचांग तभी बताऊँगी जब पंचांग पूछोगे।';
     }
-    if (q.contains('सूर्य')) {
-      return _factualForIntent(UmaCommand('सामान्य शुभ कार्य', question, intent: UmaIntent.sunriseSunset));
-    }
-    return _liveOverview();
   }
 
   String _advancedFollowUpReply(String q) {
@@ -473,7 +513,17 @@ class _UmaScreenState extends State<UmaScreen> {
                               label: const Text('इस पन्ने की पूरी जानकारी'),
                               onPressed: isProcessing ? null : () => _safeAsk(_pageInfoQuestion),
                             ),
-                          ...['मेरा पूरा data बताओ', 'अभी कौन सी दशा है?', 'साढ़ेसाती चल रही है?', 'मेरे ग्रह कहाँ हैं?', 'KP cusp बताओ', 'Jaimini बताओ', 'मेरी saved कुंडलियाँ बताओ'].map((q) => ActionChip(
+                          ...[
+                            'आज राहुकाल',
+                            'आज चौघड़िया',
+                            'आज का पंचांग',
+                            'अभी कौन सी दशा है?',
+                            'साढ़ेसाती चल रही है?',
+                            'मेरे ग्रह कहाँ हैं?',
+                            'आज के त्योहार',
+                            'दिशाशूल',
+                            'मेरी saved कुंडलियाँ बताओ',
+                          ].map((q) => ActionChip(
                             label: Text(q),
                             onPressed: isProcessing ? null : () => _safeAsk(q),
                           )),

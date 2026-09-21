@@ -55,14 +55,29 @@ class UmaAiService {
         return '${command.activity} के लिए शुभ बेला देखती हूँ।';
       case UmaIntent.help:
         return 'नमस्ते, मैं उमा हूँ। राहुकाल, चौघड़िया, कुंडली, यात्रा — जो पूछना हो बोलिए।';
+      case UmaIntent.dasha:
+        return 'दशा देखती हूँ — कुंडली बनी हो तो अभी की महादशा बताऊँगी।';
+      case UmaIntent.sadesati:
+        return 'साढ़ेसाती शनि से जुड़ी है। कुंडली हो तो बताती हूँ, नहीं तो पहले जन्म पत्रिका बनाओ।';
+      case UmaIntent.graha:
+        return 'ग्रह-भाव कुंडली से पढ़ती हूँ।';
+      case UmaIntent.kp:
+        return 'के.पी. कस्प कुंडली मॉड्यूल में खुलता है।';
+      case UmaIntent.jaimini:
+        return 'जैमिनी कारक कुंडली से बताती हूँ।';
+      case UmaIntent.festivals:
+        return 'आज और आगे के त्योहार बताती हूँ।';
+      case UmaIntent.kundali:
+        return 'कुंडली अध्याय खोलो, जन्म विवरण भरो — फिर ग्रह और दशा बताऊँगी।';
+      case UmaIntent.saved:
+        return 'सेव कुंडलियाँ देखती हूँ।';
+      case UmaIntent.page:
+        return 'इस पन्ने की बात बताती हूँ।';
     }
   }
 
   String answerIntent(String q) {
     final command = const UmaCommandRouter().route(q);
-    if (command == null) {
-      return 'नमस्ते, मैं उमा हूँ। जो पूछना हो, सीधे बोलिए।';
-    }
     return contextualReply(q, command);
   }
 }

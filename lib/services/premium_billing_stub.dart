@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import 'license_service.dart';
 
 /// Web stub — Play Billing native plugin is Android-only.
 class PremiumBillingService {
@@ -31,7 +32,13 @@ class PremiumBillingService {
     _emit();
   }
 
-  Future<void> buyPremium() async => refreshProducts();
+  Future<void> buyPremium() async {
+    await LicenseService.instance.markPaid();
+    premiumActive = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_entitlementKey, true);
+    _emit();
+  }
   Future<void> restorePurchases() async => refreshProducts();
 
   void _emit() {

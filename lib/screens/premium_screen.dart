@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../config/app_config.dart';
 import '../services/premium_billing_service.dart';
+import '../services/license_service.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
@@ -34,11 +35,32 @@ class _PremiumScreenState extends State<PremiumScreen> {
   @override
   Widget build(BuildContext context) {
     final price = _billing.product?.price ?? AppConfig.priceLabel;
+    final lic = LicenseService.instance.current;
     return Scaffold(
-      appBar: AppBar(title: const Text('⭐ Shakti Panchang Premium')),
+      appBar: AppBar(title: const Text('⭐ शक्ति पंचांग सदस्यता')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
+          Card(
+            color: lic.paid
+                ? const Color(0xFFE8F5E9)
+                : lic.trialActive
+                    ? const Color(0xFFFFF8E1)
+                    : const Color(0xFFFFEBEE),
+            child: ListTile(
+              leading: Icon(lic.entitled ? Icons.verified : Icons.lock),
+              title: Text(
+                lic.paid
+                    ? 'सदस्यता चालू'
+                    : lic.trialActive
+                        ? 'निःशुल्क परीक्षण: ${lic.trialDaysLeft} दिन बाकी'
+                        : 'परीक्षण समाप्त — विज्ञापन चालू',
+                style: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+              subtitle: const Text('7 दिन मुफ्त, फिर ₹99/वर्ष। अनइंस्टॉल से घड़ी रीसेट नहीं होती।'),
+            ),
+          ),
+          const SizedBox(height: 12),
           Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
             child: Padding(

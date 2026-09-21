@@ -5,12 +5,14 @@ import 'screens/book_home_screen.dart';
 import 'config/app_config.dart';
 import 'services/reminder_service.dart';
 import 'services/premium_billing_service.dart';
+import 'services/license_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await intl.initializeDateFormatting('hi_IN');
   runApp(const ShaktiPanchangApp());
   unawaited(ReminderService.instance.init());
+  unawaited(LicenseService.instance.init());
   unawaited(PremiumBillingService.instance.init());
 }
 

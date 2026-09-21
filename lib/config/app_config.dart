@@ -8,7 +8,7 @@ class AppConfig {
   static const pricePaise = 9900;
   static const poweredBy = 'Powered by SHIV SHAKTI';
   static const planDescription =
-      'एक साल के लिए पूरा पंचांग, उमा, मुहूर्त, चौघड़िया और यात्रा सुविधाएँ।';
+      '7 दिन निःशुल्क परीक्षण, फिर ₹99/वर्ष। विज्ञापन हटें, उमा और पूरा ग्रंथ खुलें।';
 
   static const githubRepoUrl = 'https://github.com/shastrimanish-debug/shakti-panchang';
   static const githubReleasesUrl = 'https://github.com/shastrimanish-debug/shakti-panchang/releases';

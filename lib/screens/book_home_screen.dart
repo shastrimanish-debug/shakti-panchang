@@ -16,8 +16,10 @@ import '../services/astronomical_panchang_service.dart';
 import '../models/astronomical_panchang.dart';
 import '../services/solar_service.dart';
 import '../services/location_store.dart';
+import '../services/license_service.dart';
 import '../models/panchang_models.dart';
 import 'uma_screen.dart';
+import '../widgets/ad_gate.dart';
 
 const _bg = Color(0xFFF4E8D1);
 const _paper = Color(0xFFFFF9EE);
@@ -47,6 +49,9 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   void initState() {
     super.initState();
     _primePanchang();
+    LicenseService.instance.init().then((_) {
+      if (mounted) setState(() {});
+    });
     LocationStore().selected().then((value) {
       if (!mounted) return;
       setState(() {
@@ -111,6 +116,11 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
             tooltip: 'स्थान',
             icon: const Icon(Icons.place_outlined),
             onPressed: _pickLocation,
+          ),
+          IconButton(
+            tooltip: 'सदस्यता',
+            icon: const Icon(Icons.workspace_premium_outlined),
+            onPressed: () => _openRoute(const PremiumScreen(), skipAd: true),
           ),
           IconButton(
             tooltip: 'गणना जाँच',
@@ -186,7 +196,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           ),
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: () => _openRoute(const PremiumScreen()),
+            onPressed: () => _openRoute(const PremiumScreen(), skipAd: true),
             icon: const Icon(Icons.workspace_premium_rounded),
             label: const Text('Shakti Panchang Premium'),
           ),
@@ -323,7 +333,11 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
     }
   }
 
-  Future<void> _openRoute(Widget page) async {
+  Future<void> _openRoute(Widget page, {bool skipAd = false}) async {
+    if (!skipAd) {
+      final ok = await AdGate.beforeOpen(context);
+      if (!mounted || !ok) return;
+    }
     // PageFlipWidget keeps an internal animation/snapshot state. Rebuilding the
     // book with the same GlobalKey after a child route returns can leave that
     // snapshot intercepting taps. Recreate the widget after every child route
