@@ -11,6 +11,7 @@ import '../services/panchang_boundary_service.dart';
 import '../services/xalen_service.dart';
 import 'accuracy_screen.dart';
 import 'uma_screen.dart';
+import '../services/bhojpatra_pdf_service.dart';
 
 class PanchangDetailScreen extends StatefulWidget {
   final DateTime date;
@@ -91,6 +92,15 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
       appBar: AppBar(
         title: const Text('पूरा पंचांग'),
         actions: [
+          IconButton(
+            tooltip: 'PDF',
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: () => BhojpatraPdfService.panchang(
+              p: _data,
+              date: _date,
+              place: widget.place,
+            ),
+          ),
           IconButton(
             tooltip: 'उमा',
             icon: const Icon(Icons.auto_awesome),
