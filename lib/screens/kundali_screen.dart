@@ -272,50 +272,51 @@ class _KundaliScreenState extends State<KundaliScreen> {
       ),
       body: SafeArea(
         child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: _bhojBrown.withValues(alpha: .08),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _chapterDot('विवरण', 0),
-                _chapterLine(),
-                _chapterDot('चक्र', 1),
-                _chapterLine(),
-                _chapterDot('फल', 2),
-              ],
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: _bhojBrown.withValues(alpha: .08),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _chapterDot('विवरण', 0),
+                  _chapterLine(),
+                  _chapterDot('चक्र', 1),
+                  _chapterLine(),
+                  _chapterDot('फल', 2),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: PageFlipWidget(
-              key: _pageKey,
-              backgroundColor: _bhojBg,
-              children: pages,
+            Expanded(
+              child: PageFlipWidget(
+                key: _pageKey,
+                backgroundColor: _bhojBg,
+                children: pages,
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton.icon(
-                  onPressed: _page > 0 ? () => _goToPage(_page - 1) : null,
-                  icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
-                  label: const Text('पिछला पन्ना'),
-                ),
-                Text('बाएँ/दाएँ स्वाइप करके पन्ना पलटें', style: TextStyle(color: _bhojBrown.withValues(alpha: .65), fontSize: 11)),
-                TextButton.icon(
-                  onPressed: _page < 2 ? () => _goToPage(_page + 1) : null,
-                  icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                  label: const Text('अगला पन्ना'),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    onPressed: _page > 0 ? () => _goToPage(_page - 1) : null,
+                    icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
+                    label: const Text('पिछला पन्ना'),
+                  ),
+                  Text('बाएँ/दाएँ स्वाइप करके पन्ना पलटें', style: TextStyle(color: _bhojBrown.withValues(alpha: .65), fontSize: 11)),
+                  TextButton.icon(
+                    onPressed: _page < 2 ? () => _goToPage(_page + 1) : null,
+                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    label: const Text('अगला पन्ना'),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ), // <-- Ye bracket chhuta tha SafeArea ke liye!
     );
   }
 
