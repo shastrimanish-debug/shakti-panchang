@@ -15,12 +15,6 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
   DateTime _dob = DateTime(1990, 1, 1);
   NumerologyResult? _result;
 
-  @override
-  void dispose() {
-    _name.dispose();
-    super.dispose();
-  }
-
   Future<void> _pickDate() async {
     final d = await showDatePicker(context: context, initialDate: _dob, firstDate: DateTime(1900), lastDate: DateTime.now());
     if (d != null) setState(() => _dob = d);
