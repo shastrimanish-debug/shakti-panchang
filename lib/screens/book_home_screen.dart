@@ -11,10 +11,10 @@ import 'panchang_detail_screen.dart';
 import 'premium_screen.dart';
 import 'app_settings_screen.dart';
 import 'choghadiya_screen.dart';
+import 'location_search_screen.dart';
 import 'daily_rashifal_screen.dart';
 import 'numerology_screen.dart';
 import 'saved_profiles_screen.dart';
-import 'location_search_screen.dart';
 import '../services/astronomical_panchang_service.dart';
 import '../models/astronomical_panchang.dart';
 import '../services/solar_service.dart';
@@ -71,9 +71,8 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   String get _place => _location?.name ?? 'Ujjain';
 
   void _go(int page) {
-    if (page < 0 || page >= 11) return;
     _pageKey.currentState?.goToPage(page);
-    if (mounted) setState(() => _page = page);
+    setState(() => _page = page);
   }
 
   @override
@@ -84,10 +83,10 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       KeyedSubtree(key: const ValueKey('kundali'), child: _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
       })),
-      KeyedSubtree(key: const ValueKey('rashifal'), child: _sectionPage(context, 'Daily Rashifal', 'जन्म-कुंडली • दशा • गोचर • Lucky Calculation', Icons.wb_sunny_outlined, () async {
+      KeyedSubtree(key: const ValueKey('daily_rashifal'), child: _sectionPage(context, 'दैनिक राशिफल', 'जन्म-कुंडली • दशा • गोचर • शुभ अंक', Icons.wb_sunny_rounded, () async {
         await _openRoute(const DailyRashifalScreen());
       })),
-      KeyedSubtree(key: const ValueKey('numerology'), child: _sectionPage(context, 'Numerology', 'मूलांक • भाग्यांक • नामांक • शुभ अंक', Icons.numbers_rounded, () async {
+      KeyedSubtree(key: const ValueKey('numerology'), child: _sectionPage(context, 'अंक ज्योतिष', 'मूलांक • भाग्यांक • नामांक • शुभ अंक', Icons.tag, () async {
         await _openRoute(const NumerologyScreen());
       })),
       KeyedSubtree(key: const ValueKey('muhurat'), child: _sectionPage(context, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () async {
@@ -109,11 +108,11 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise),
         ));
       })),
-      KeyedSubtree(key: const ValueKey('saved'), child: _sectionPage(context, 'सेव की गई कुंडलियाँ', 'जन्म विवरण • प्रोफाइल • भविष्यवाणी के लिए आधार', Icons.folder_special_outlined, () async {
-        await _openRoute(const SavedProfilesScreen());
-      })),
       KeyedSubtree(key: const ValueKey('reminder'), child: _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
         await _openRoute(const ReminderScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('saved_kundali'), child: _sectionPage(context, 'सेव की गई कुंडलियाँ', 'पुरानी जन्म-कुंडलियाँ देखें और फिर से खोलें', Icons.history_rounded, () async {
+        await _openRoute(const SavedProfilesScreen());
       })),
     ];
 
@@ -143,8 +142,6 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ],
       ),
       body: SafeArea(
-        top: false,
-        bottom: true,
         child: Column(
           children: [
           Expanded(
@@ -164,47 +161,13 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
             child: Column(
               children: [
-                if (_page >= 1 && _page < pages.length)
+                if (_page >= 1 && _page <= 10)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: _openingPanchang ? null : _openCurrentChapter,
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('यह अध्याय खोलें'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              final pageTitles = <String>[
-                                'मुख्य ग्रंथ', 'पंचांग', 'कुंडली', 'Daily Rashifal', 'Numerology',
-                                'शुभ मुहूर्त', 'यात्रा', 'व्रत एवं त्योहार', 'शुभ समय', 'सेव की गई कुंडलियाँ', 'रिमाइंडर',
-                              ];
-                              final pageDescriptions = <String>[
-                                'पूरे SHAKTI PANCHANG के अध्यायों और UMA की सहायता के बारे में मार्गदर्शन।',
-                                'आज के पंचांग की तिथि, नक्षत्र, योग, करण और सूर्य समय।',
-                                'जन्म कुंडली, वर्ग, दशा और फलित मॉड्यूल।',
-                                'जन्म-कुंडली, दशा, गोचर और दैनिक राशिफल।',
-                                'मूलांक, भाग्यांक, नामांक और शुभ अंक।',
-                                'विवाह, गृहप्रवेश और कार्यारम्भ के शुभ मुहूर्त।',
-                                'दिशाशूल, शुभ दिशा और यात्रा सलाह।',
-                                'व्रत, एकादशी, पूर्णिमा, अमावस्या और पर्व।',
-                                'चौघड़िया, राहुकाल, यमगण्ड और गुलिक।',
-                                'सेव की गई जन्म-कुंडली प्रोफाइल।',
-                                'व्रत और शुभ समय के रिमाइंडर।',
-                              ];
-                              _openUma(pageTitles[_page], pageDescriptions[_page]);
-                            },
-                            icon: const Icon(Icons.auto_awesome_rounded),
-                            label: const Text('उमा'),
-                          ),
-                        ),
-                      ],
+                    child: FilledButton.icon(
+                      onPressed: _openingPanchang ? null : _openCurrentChapter,
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('यह अध्याय खोलें'),
                     ),
                   ),
                 Row(
@@ -252,19 +215,23 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ]),
       );
 
-  Widget _sectionPage(BuildContext context, String title, String subtitle, IconData icon, VoidCallback _onOpen) => _paperPage(
+  Widget _sectionPage(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onOpen) => _paperPage(
         Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(icon, size: 72, color: _gold),
           const SizedBox(height: 20),
-          Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: _brown)),
+          Text(title, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: _brown)),
           const SizedBox(height: 10),
           Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, height: 1.5)),
-          const SizedBox(height: 34),
-          const Icon(Icons.swipe_rounded, color: _gold, size: 30),
-          const SizedBox(height: 8),
-          const Text('नीचे “यह अध्याय खोलें” से सुविधा खोलें', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, fontSize: 12)),
-          const SizedBox(height: 6),
-          const Text('या बाएँ/दाएँ स्वाइप करके पन्ना पलटें', style: TextStyle(color: Colors.black54, fontSize: 12)),
+          const SizedBox(height: 28),
+          FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.open_in_new), label: const Text('यह अध्याय खोलें')),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => _openUma(title, subtitle),
+            icon: const Icon(Icons.auto_awesome_rounded),
+            label: const Text('उमा — इस पन्ने की जानकारी'),
+          ),
+          const SizedBox(height: 18),
+          const Text('बाएँ/दाएँ स्वाइप करके पन्ना पलटें', style: TextStyle(color: Colors.black54, fontSize: 12)),
         ]),
       );
 
@@ -349,10 +316,10 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         ));
         return;
       case 9:
-        await _openRoute(const SavedProfilesScreen());
+        await _openRoute(const ReminderScreen());
         return;
       case 10:
-        await _openRoute(const ReminderScreen());
+        await _openRoute(const SavedProfilesScreen());
         return;
     }
   }

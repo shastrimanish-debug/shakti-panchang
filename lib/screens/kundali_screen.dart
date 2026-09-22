@@ -9,7 +9,6 @@ import 'kundali_modules_screen.dart';
 import 'location_search_screen.dart'; 
 import 'saved_profiles_screen.dart';
 import 'uma_screen.dart';
-import 'book_home_screen.dart';
 import 'personalized_prediction_screen.dart';  
 
 const Color _bhojBg = Color(0xFFF4E8D1);
@@ -226,12 +225,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'पिछले अध्याय पर जाएँ',
           onPressed: () {
-            final navigator = Navigator.of(context);
-            if (navigator.canPop()) {
-              navigator.pop();
-            } else {
-              navigator.pushReplacement(MaterialPageRoute(builder: (_) => const BookHomeScreen()));
-            }
+            Navigator.of(context).pop();
           },
         ),
         title: const Text('कुंडली', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19)),
@@ -276,7 +270,8 @@ class _KundaliScreenState extends State<KundaliScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
           Container(
             width: double.infinity,
