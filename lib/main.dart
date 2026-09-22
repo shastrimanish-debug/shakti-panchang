@@ -46,6 +46,11 @@ class _ShaktiPanchangAppState extends State<ShaktiPanchangApp> {
       ],
       supportedLocales: const [Locale('hi', 'IN'), Locale('en', 'US'), Locale('gu', 'IN')],
       locale: AppSettings.instance.locale,
+      builder: (context, child) => SafeArea(
+        top: false,
+        bottom: true,
+        child: child ?? const SizedBox.shrink(),
+      ),
       home: const BookHomeScreen(),
       onGenerateRoute: (settings) => null,
     ),
