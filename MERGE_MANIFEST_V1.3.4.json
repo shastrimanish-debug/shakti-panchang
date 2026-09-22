@@ -1,0 +1,16 @@
+{
+  "name": "Shakti Panchang merged release",
+  "base": "shakti-panchang-main (GitHub updated)",
+  "overlay": "shakti-panchang-daily-rashifal-all-yellow-features-v1.3.4",
+  "version": "1.3.4+48",
+  "merge_policy": [
+    "GitHub updated source retained as base.",
+    "Daily Rashifal / Dasha / Lucky / Sookshma / Prana / Ashtakavarga / Premium report feature files added from v1.3.4.",
+    "Location-safe GitHub changes retained in BookHome.",
+    "Accuracy/गणना जाँच navigation remains removed.",
+    "GitHub AppSettings ChangeNotifier retained for main ListenableBuilder compatibility.",
+    "Numerology dispose retained from GitHub to avoid controller lifecycle regression.",
+    "Recurring reminder changes retained from v1.3.4.",
+    "Kundali calculator referenceDate retained for selected-date Dasha."
+  ]
+}
