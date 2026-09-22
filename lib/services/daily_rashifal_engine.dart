@@ -51,7 +51,7 @@ class DailyRashifalEngine {
     final nodeHouse = _houseFrom(rashiIndex, nodeSign);
 
     final theme = _theme(moonHouse, sunHouse, p.tithiNumber, p.yogaNumber);
-    final career = _career(sunHouse, moonHouse, p.weekday);
+    final career = _career(sunHouse, moonHouse, date.weekday);
     final money = _money(sunHouse, nodeHouse, p.tithiNumber);
     final love = _love(moonHouse, sunHouse);
     final health = _health(moonHouse, p.nakshatraNumber);

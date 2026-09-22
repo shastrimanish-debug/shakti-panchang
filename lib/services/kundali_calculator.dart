@@ -43,7 +43,7 @@ class KundaliCalculator {
     final nakIndex = (moon.degree/(360/27)).floor().clamp(0,26);
     final pada = ((moon.degree%(360/27))/(360/108)).floor()+1;
     final sun = positions.firstWhere((p)=>p.planet=='सूर्य');
-    final dasha = _currentDasha(dt, moon.degree, nakIndex);
+    final dasha = _currentDasha(dt, moon.degree, nakIndex, referenceDate ?? DateTime.now());
     return KundaliData(name:name,birthDate:birthDate,birthTime:birthTime,birthPlace:birthPlace,latitude:latitude,longitude:longitude,timezoneHours:timezoneHours,planets:positions,lagnaDegree:h.ascendantDeg,lagnaRashi:rashis[lagnaIndex],moonRashi:moon.rashi,sunRashi:sun.rashi,nakshatra:nakshatras[nakIndex],charan:'$pada',nadi:nadi[nakIndex],gana:gana[nakIndex],yoni:yoni[nakIndex],varna:_varna(moon.rashi),mahadasha:dasha.maha,antardasha:dasha.antar,dashaPeriods:dasha.periods,antarPeriods:dasha.antarPeriods,pratyantarPeriods:dasha.pratyantarPeriods);
   }
 
@@ -81,7 +81,7 @@ class KundaliCalculator {
 
   static String _varna(String rashi) { final i=rashis.indexOf(rashi); if ([0,4,8].contains(i)) return 'क्षत्रिय'; if ([1,5,9].contains(i)) return 'वैश्य'; if ([2,6,10].contains(i)) return 'शूद्र'; return 'ब्राह्मण'; }
 
-  static ({String maha,String antar,List<DashaPeriod> periods,List<DashaSubPeriod> antarPeriods,List<DashaPratyantar> pratyantarPeriods}) _currentDasha(DateTime birth, double moonLon, int nakIndex) {
+  static ({String maha,String antar,List<DashaPeriod> periods,List<DashaSubPeriod> antarPeriods,List<DashaPratyantar> pratyantarPeriods}) _currentDasha(DateTime birth, double moonLon, int nakIndex, DateTime referenceDate) {
     final lord = nakLords[nakIndex % 9];
     final startIdx = dashaOrder.indexOf(lord);
     final nakSpan = 360.0 / 27.0;
@@ -89,7 +89,7 @@ class KundaliCalculator {
     final firstBalanceYears = dashaYears[lord]! * (1.0 - withinNak);
     final periods = <DashaPeriod>[];
     var cursor = birth;
-    final now = referenceDate ?? DateTime.now();
+    final now = referenceDate;
 
     // Build the complete Vimshottari timeline through 120 years from birth.
     // This is the report/UI lifetime horizon; it is deliberately not limited to 10 years.
