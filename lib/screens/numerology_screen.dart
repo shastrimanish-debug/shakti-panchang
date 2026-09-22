@@ -67,5 +67,6 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
 
   Widget _field(String label, TextEditingController c, IconData icon) => TextField(controller: c, decoration: InputDecoration(filled: true, fillColor: _card, prefixIcon: Icon(icon, color: _brown), labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14))));
 
-  Widget _numberCard(String title, int number, String subtitle) => Card(color: _card, margin: const EdgeInsets.only(bottom: 10), child: ListTile(leading: CircleAvatar(backgroundColor: _brown, foregroundColor: _bg, child: Text('$number', style: const TextStyle(fontWeight: FontWeight.w900))), title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: _brown)), subtitle: Text(subtitle));
+  // Fixed the missing parenthesis at the end of this line
+  Widget _numberCard(String title, int number, String subtitle) => Card(color: _card, margin: const EdgeInsets.only(bottom: 10), child: ListTile(leading: CircleAvatar(backgroundColor: _brown, foregroundColor: _bg, child: Text('$number', style: const TextStyle(fontWeight: FontWeight.w900))), title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: _brown)), subtitle: Text(subtitle)));
 }
