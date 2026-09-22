@@ -1,6 +1,5 @@
 import '../models/kundali_model.dart';
 import 'advanced_kundali_service.dart';
-import 'kundali_calculator.dart';
 
 /// Advanced daily timing helpers used by the personalized Daily Rashifal.
 ///
