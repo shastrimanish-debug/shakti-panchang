@@ -9,7 +9,6 @@ import '../services/inauspicious_service.dart';
 import '../services/muhurat_engine.dart';
 import '../services/panchang_boundary_service.dart';
 import '../services/xalen_service.dart';
-import 'accuracy_screen.dart';
 import 'uma_screen.dart';
 import '../services/bhojpatra_pdf_service.dart';
 
@@ -108,16 +107,6 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
               context,
               MaterialPageRoute(
                 builder: (_) => UmaScreen(date: _date, pageContext: 'पंचांग', pageDescription: 'आज का पंचांग'),
-              ),
-            ),
-          ),
-          IconButton(
-            tooltip: 'जाँच',
-            icon: const Icon(Icons.science_outlined),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AccuracyScreen(lat: widget.lat, lon: widget.lon, date: _date),
               ),
             ),
           ),

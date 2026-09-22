@@ -9,7 +9,7 @@ import 'reminder_screen.dart';
 import 'yatra_screen.dart';
 import 'panchang_detail_screen.dart';
 import 'premium_screen.dart';
-import 'accuracy_screen.dart';
+import 'app_settings_screen.dart';
 import 'choghadiya_screen.dart';
 import 'location_search_screen.dart';
 import '../services/astronomical_panchang_service.dart';
@@ -123,13 +123,9 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
             onPressed: () => _openRoute(const PremiumScreen(), skipAd: true),
           ),
           IconButton(
-            tooltip: 'गणना जाँच',
-            icon: const Icon(Icons.science_outlined),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => AccuracyScreen(lat: _lat, lon: _lon, date: DateTime.now()),
-              ));
-            },
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => _openRoute(const AppSettingsScreen(), skipAd: true),
           ),
         ],
       ),

@@ -10,6 +10,7 @@ class ReminderScreen extends StatefulWidget {
 
 class _ReminderScreenState extends State<ReminderScreen> {
   DateTime when = DateTime.now().add(const Duration(hours: 1));
+  String frequency = 'एक बार';
   final title = TextEditingController(text: 'उमा का शुभ समय reminder');
   final body = TextEditingController(text: 'Shakti Panchang का याद दिलाना');
 
@@ -28,12 +29,16 @@ class _ReminderScreenState extends State<ReminderScreen> {
 
   Future<void> schedule() async {
     if (when.isBefore(DateTime.now())) return;
-    await ReminderService.instance.schedule(
-      id: when.millisecondsSinceEpoch.remainder(2147483647),
-      title: title.text.trim().isEmpty ? 'Shakti Panchang' : title.text.trim(),
-      body: body.text.trim().isEmpty ? 'उमा का reminder' : body.text.trim(),
-      when: when,
-    );
+    final id = when.millisecondsSinceEpoch.remainder(2147483647);
+    final reminderTitle = title.text.trim().isEmpty ? 'Shakti Panchang' : title.text.trim();
+    final reminderBody = body.text.trim().isEmpty ? 'उमा का reminder' : body.text.trim();
+    if (frequency == 'रोज़') {
+      await ReminderService.instance.scheduleDaily(id: id, title: reminderTitle, body: reminderBody, firstWhen: when);
+    } else if (frequency == 'हर सप्ताह') {
+      await ReminderService.instance.scheduleWeekly(id: id, title: reminderTitle, body: reminderBody, firstWhen: when);
+    } else {
+      await ReminderService.instance.schedule(id: id, title: reminderTitle, body: reminderBody, when: when);
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Reminder ${when.day}/${when.month} ${when.hour.toString().padLeft(2,'0')}:${when.minute.toString().padLeft(2,'0')} पर सेट है।')),
@@ -67,9 +72,20 @@ class _ReminderScreenState extends State<ReminderScreen> {
           onTap: pick,
         )),
         const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          initialValue: frequency,
+          decoration: const InputDecoration(labelText: 'दोहराव', border: OutlineInputBorder()),
+          items: const [
+            DropdownMenuItem(value: 'एक बार', child: Text('एक बार')),
+            DropdownMenuItem(value: 'रोज़', child: Text('रोज़')),
+            DropdownMenuItem(value: 'हर सप्ताह', child: Text('हर सप्ताह')),
+          ],
+          onChanged: (v) => setState(() => frequency = v ?? 'एक बार'),
+        ),
+        const SizedBox(height: 12),
         FilledButton.icon(onPressed: schedule, icon: const Icon(Icons.notifications_active), label: const Text('Reminder लगाएँ')),
         const SizedBox(height: 16),
-        const Text('नोट: अभी one-time reminder उपलब्ध है। अगली release में daily/weekly smart reminders जोड़े जा सकते हैं।', style: TextStyle(color: Colors.black54)),
+        const Text('रोज़ और साप्ताहिक reminders भी सेट किए जा सकते हैं।', style: TextStyle(color: Colors.black54)),
       ],
     ),
   );

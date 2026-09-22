@@ -8,6 +8,8 @@ import 'uma_screen.dart';
 import 'festivals_screen.dart';
 import 'reminder_screen.dart';
 import 'shubh_samay_screen.dart';
+import 'numerology_screen.dart';
+import 'daily_rashifal_screen.dart';
 
 import '../models/panchang_models.dart';
 import '../services/solar_service.dart'; 
@@ -207,6 +209,24 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderScreen()));
             },
+          ),
+          const SizedBox(height: 16),
+
+          _homeNavCard(
+            context,
+            title: 'दैनिक राशिफल (Daily Rashifal)',
+            subtitle: '12 राशियों के लिए आज का सामान्य राशिफल, करियर, धन, संबंध और स्वास्थ्य संकेत',
+            icon: Icons.wb_sunny_rounded,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyRashifalScreen())),
+          ),
+          const SizedBox(height: 16),
+
+          _homeNavCard(
+            context,
+            title: 'अंक ज्योतिष (Numerology)',
+            subtitle: 'मूलांक, भाग्यांक, नामांक, Soul और Personality numbers',
+            icon: Icons.pin_rounded,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NumerologyScreen())),
           ),
         ],
       ),

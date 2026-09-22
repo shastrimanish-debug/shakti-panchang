@@ -4,7 +4,8 @@ import 'uma_screen.dart';
 import '../widgets/kundali_chart.dart'; 
 import '../services/kundali_calculator.dart';
 import 'dasha_screen.dart';
-import 'kundali_milan_screen.dart'; 
+import 'kundali_milan_screen.dart';
+import 'astrology_advanced_screen.dart'; 
 
 // --- Main Screen with 3 Tabs ---
 class KundaliModulesScreen extends StatelessWidget {
@@ -212,6 +213,32 @@ class _AllChartsPage extends StatelessWidget {
                   Text('कुंडली मिलान (36 गुण)', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: bhojBrown)),
                   SizedBox(height: 4),
                   Text('अष्टकूट: वर्ण, वश्य, तारा, योनि, ग्रह मैत्री, गण, भकूट, नाड़ी', style: TextStyle(fontSize: 12, color: Colors.black87)),
+                ])),
+                const Icon(Icons.arrow_forward_ios_rounded, color: bhojBorder, size: 18),
+              ]),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        Card(
+          color: bhojCard,
+          elevation: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: bhojBorder, width: 1.2)),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AstrologyAdvancedScreen(data: data)));
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                CircleAvatar(radius: 26, backgroundColor: bhojBrown, child: const Icon(Icons.auto_graph_rounded, color: Color(0xFFF4E8D1), size: 28)),
+                const SizedBox(width: 16),
+                const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('उन्नत ज्योतिष', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: bhojBrown)),
+                  SizedBox(height: 4),
+                  Text('KP • Jaimini • गोचर • साढ़ेसाती • प्रश्न • अष्टकवर्ग • ग्रहबल', style: TextStyle(fontSize: 12, color: Colors.black87)),
                 ])),
                 const Icon(Icons.arrow_forward_ios_rounded, color: bhojBorder, size: 18),
               ]),

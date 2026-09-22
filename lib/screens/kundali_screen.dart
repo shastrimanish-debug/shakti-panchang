@@ -8,7 +8,8 @@ import '../widgets/kundali_chart.dart'; // 🌟 असली चार्ट द
 import 'kundali_modules_screen.dart';
 import 'location_search_screen.dart'; 
 import 'saved_profiles_screen.dart';
-import 'uma_screen.dart';  
+import 'uma_screen.dart';
+import 'personalized_prediction_screen.dart';  
 
 const Color _bhojBg = Color(0xFFF4E8D1);
 const Color _bhojCard = Color(0xFFFAF2E4);
@@ -252,6 +253,13 @@ class _KundaliScreenState extends State<KundaliScreen> {
             icon: const Icon(Icons.auto_awesome_rounded),
             tooltip: 'उमा — इस पन्ने की जानकारी',
             onPressed: _openUma,
+          ),
+          IconButton(
+            icon: const Icon(Icons.insights_rounded),
+            tooltip: _isCalculated ? 'मेरी Personal Prediction' : 'पहले कुंडली की गणना करें',
+            onPressed: _isCalculated
+                ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => PersonalizedPredictionScreen(data: _currentKundali)))
+                : null,
           ),
           IconButton(
             icon: const Icon(Icons.history_rounded),
