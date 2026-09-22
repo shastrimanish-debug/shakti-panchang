@@ -13,7 +13,7 @@ The app now contains a real Google Play Billing purchase/restore flow. Google Pl
 **Powered by SHIV SHAKTI**
 
 ### Release
-Version **1.1.0+38**.
+Version **1.3.4+48**.
 
 Release builds require a real Play upload keystore and intentionally fail when signing credentials are missing. See `docs/PLAY_RELEASE_SETUP.md`.
 
@@ -31,3 +31,9 @@ A ready-to-host policy is included at `privacy_policy/index.html`. Host it at:
 `REFERENCE_VALIDATION_RESULT.json` records the existing 21-case reference validation. The release process must still run the current Flutter test suite and should not claim independent astronomical certification beyond the checked fixture.
 
 **Powered by SHIV SHAKTI**
+
+
+### New astrology surfaces
+- Daily Rashifal: `lib/screens/daily_rashifal_screen.dart`
+- Numerology: `lib/screens/numerology_screen.dart` + `lib/services/numerology_service.dart`
+- Personalized Prediction: `lib/screens/personalized_prediction_screen.dart`, driven by the existing `UmaPredictionEngine`.
