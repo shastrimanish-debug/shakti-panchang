@@ -12,5 +12,7 @@ class ReminderService {
     required DateTime when,
   }) async {}
 
+  Future<void> scheduleDaily({required int id, required String title, required String body, required DateTime firstWhen}) async {}
+  Future<void> scheduleWeekly({required int id, required String title, required String body, required DateTime firstWhen}) async {}
   Future<void> cancel(int id) async {}
 }

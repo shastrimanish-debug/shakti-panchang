@@ -13,7 +13,7 @@ class KundaliCalculator {
   static const AstronomyEnginePlanetIds = [0,1,2,3,4,5,6];
   static const dashaOrder = ['केतु','शुक्र','सूर्य','चंद्र','मंगल','राहु','गुरु','शनि','बुध'];
 
-  static Future<KundaliData> calculate({required String name, required DateTime birthDate, required String birthTime, required String birthPlace, required double latitude, required double longitude, double timezoneHours = 5.5}) async {
+  static Future<KundaliData> calculate({required String name, required DateTime birthDate, required String birthTime, required String birthPlace, required double latitude, required double longitude, double timezoneHours = 5.5, DateTime? referenceDate}) async {
     final parsed = _parseBirthTime(birthTime);
     if (parsed == null) throw const FormatException('Invalid birth time. Use HH:MM, HH.MM or HHMM.');
     // Fix: explicitly cast tuple elements to int
@@ -89,7 +89,7 @@ class KundaliCalculator {
     final firstBalanceYears = dashaYears[lord]! * (1.0 - withinNak);
     final periods = <DashaPeriod>[];
     var cursor = birth;
-    final now = DateTime.now();
+    final now = referenceDate ?? DateTime.now();
 
     // Build the complete Vimshottari timeline through 120 years from birth.
     // This is the report/UI lifetime horizon; it is deliberately not limited to 10 years.

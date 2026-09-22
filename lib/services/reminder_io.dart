@@ -16,12 +16,19 @@ class ReminderService {
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const settings = InitializationSettings(android: android);
+    const darwin = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const settings = InitializationSettings(android: android, iOS: darwin, macOS: darwin);
     await _plugin.initialize(settings);
 
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.requestNotificationsPermission();
+    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+    await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
     _ready = true;
   }
 
@@ -50,6 +57,22 @@ class ReminderService {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
+  }
+
+  Future<void> scheduleDaily({required int id, required String title, required String body, required DateTime firstWhen}) async {
+    await init();
+    if (firstWhen.isBefore(DateTime.now())) return;
+    await _plugin.zonedSchedule(id, title, body, tz.TZDateTime.from(firstWhen, tz.local),
+      const NotificationDetails(android: AndroidNotificationDetails('shakti_panchang_reminders','Shakti Panchang Reminders', channelDescription: 'उमा reminders', importance: Importance.high, priority: Priority.high)),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, matchDateTimeComponents: DateTimeComponents.time);
+  }
+
+  Future<void> scheduleWeekly({required int id, required String title, required String body, required DateTime firstWhen}) async {
+    await init();
+    if (firstWhen.isBefore(DateTime.now())) return;
+    await _plugin.zonedSchedule(id, title, body, tz.TZDateTime.from(firstWhen, tz.local),
+      const NotificationDetails(android: AndroidNotificationDetails('shakti_panchang_reminders','Shakti Panchang Reminders', channelDescription: 'उमा reminders', importance: Importance.high, priority: Priority.high)),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime);
   }
 
   Future<void> cancel(int id) async {
