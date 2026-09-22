@@ -51,7 +51,20 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
         _numberCard('Soul / Heart', _result!.soul, 'नाम के vowels से'),
         _numberCard('Personality', _result!.personality, 'नाम के consonants से'),
         _numberCard('Chaldean Name', _result!.chaldeanName, 'नाम के Chaldean letter values से'),
-        Card(color: _card, child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('शुभ अंक', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: _brown)), const SizedBox(height: 8), Text(_result!.luckyNumbers.join(' • '), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900))]))) ,
+        Card(
+          color: _card,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('शुभ अंक', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: _brown)),
+                const SizedBox(height: 8),
+                Text(_result!.luckyNumbers.join(' • '), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 10),
         const Text('नोट: अंक ज्योतिष पारंपरिक/आध्यात्मिक interpretation है; इसे निश्चित भविष्यवाणी या वित्तीय/स्वास्थ्य निर्णय का आधार न बनाएं।', style: TextStyle(fontSize: 12)),
       ],

@@ -126,7 +126,7 @@ class _DailyRashifalScreenState extends State<DailyRashifalScreen> {
             ),
           ],
           DropdownButtonFormField<int>(
-            value: _selected,
+            initialValue: _selected,
             decoration: const InputDecoration(labelText: 'राशि चुनें', filled: true, fillColor: _card, border: OutlineInputBorder()),
             items: List.generate(12, (i) => DropdownMenuItem(value: i, child: Text('${DailyRashifalEngine.rashis[i]} राशि'))),
             onChanged: _useBirthChart ? null : (v) async { if (v != null) { setState(() => _selected = v); await _load(); } },
@@ -134,7 +134,7 @@ class _DailyRashifalScreenState extends State<DailyRashifalScreen> {
           const SizedBox(height: 14),
           if (_profiles.isNotEmpty) ...[
             DropdownButtonFormField<String>(
-              value: _deepProfile?.id,
+              initialValue: _deepProfile?.id,
               decoration: const InputDecoration(labelText: 'जन्म-कुंडली से Daily Rashifal personalize करें', filled: true, fillColor: _card, border: OutlineInputBorder()),
               items: _profiles.map((p) => DropdownMenuItem(value: p.id, child: Text('${p.name} • ${p.birthPlace}'))).toList(),
               onChanged: (id) async {
@@ -164,29 +164,47 @@ class _DailyRashifalScreenState extends State<DailyRashifalScreen> {
 
   Widget _resultCard(DailyRashifalResult r) => Column(
     children: [
-      Card(color: _card, child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('${r.rashi} — आज का संकेत', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900, color: _brown)),
-        const SizedBox(height: 8),
-        Text(r.theme, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 14),
-        _line('💼 करियर', r.career),
-        _line('💰 धन', r.money),
-        _line('❤️ संबंध', r.love),
-        _line('🧘 स्वास्थ्य', r.health),
-        const Divider(),
-        Text('शुभ अंक: ${r.luckyNumbers.join(' • ')}   •   प्रमुख: ${r.luckyNumber}   •   शुभ रंग: ${r.luckyColor}', style: const TextStyle(fontWeight: FontWeight.w900)),
-        const SizedBox(height: 4),
-        Text('गणना: ${r.luckyMethod}', style: const TextStyle(fontSize: 11)),
-      ])),
-      Card(color: _card, child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('आज की गणना', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: _brown)),
-        const SizedBox(height: 8),
-        Text('चंद्र राशि: ${r.moonSign} • सूर्य राशि: ${r.sunSign} • राहु: ${r.nodeSign}'),
-        Text('तिथि: ${r.tithi} • नक्षत्र: ${r.nakshatra} • योग: ${r.yoga}'),
-        Text('आपकी राशि से चंद्र ${r.moonHouse}वें, सूर्य ${r.sunHouse}वें और राहु ${r.nodeHouse}वें भाव-सदृश गोचर में।'),
-        const SizedBox(height: 6),
-        Text('गणना इंजन: ${r.calculationEngine}', style: const TextStyle(fontSize: 11)),
-      ])),
+      Card(
+        color: _card,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${r.rashi} — आज का संकेत', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900, color: _brown)),
+              const SizedBox(height: 8),
+              Text(r.theme, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 14),
+              _line('💼 करियर', r.career),
+              _line('💰 धन', r.money),
+              _line('❤️ संबंध', r.love),
+              _line('🧘 स्वास्थ्य', r.health),
+              const Divider(),
+              Text('शुभ अंक: ${r.luckyNumbers.join(' • ')}   •   प्रमुख: ${r.luckyNumber}   •   शुभ रंग: ${r.luckyColor}', style: const TextStyle(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 4),
+              Text('गणना: ${r.luckyMethod}', style: const TextStyle(fontSize: 11)),
+            ],
+          ),
+        ),
+      ),
+      Card(
+        color: _card,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('आज की गणना', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: _brown)),
+              const SizedBox(height: 8),
+              Text('चंद्र राशि: ${r.moonSign} • सूर्य राशि: ${r.sunSign} • राहु: ${r.nodeSign}'),
+              Text('तिथि: ${r.tithi} • नक्षत्र: ${r.nakshatra} • योग: ${r.yoga}'),
+              Text('आपकी राशि से चंद्र ${r.moonHouse}वें, सूर्य ${r.sunHouse}वें और राहु ${r.nodeHouse}वें भाव-सदृश गोचर में।'),
+              const SizedBox(height: 6),
+              Text('गणना इंजन: ${r.calculationEngine}', style: const TextStyle(fontSize: 11)),
+            ],
+          ),
+        ),
+      ),
       const SizedBox(height: 8),
       const Text('यह पारंपरिक राशि-आधारित फलादेश है। इसे व्यक्तिगत चिकित्सा, वित्तीय या कानूनी सलाह न मानें।', style: TextStyle(fontSize: 12)),
     ],
