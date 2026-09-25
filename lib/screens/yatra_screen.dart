@@ -69,11 +69,13 @@ class _YatraScreenState extends State<YatraScreen> {
           ? DateTime.now()
           : selectedDate,
     );
-    if (d != null) setState(() {
-      selectedDate = DateTime(d.year, d.month, d.day);
-      result = null;
-      advice = null;
-    });
+    if (d != null) {
+      setState(() {
+        selectedDate = DateTime(d.year, d.month, d.day);
+        result = null;
+        advice = null;
+      });
+    }
   }
 
   void calculate() {
@@ -81,7 +83,7 @@ class _YatraScreenState extends State<YatraScreen> {
     final lon = double.tryParse(toLon.text.trim());
     if (lat == null || lon == null || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Destination latitude/longitude sahi bharein.')),
+        const SnackBar(content: Text('डेस्टिनेशन latitude/longitude सही भरें।')),
       );
       return;
     }
@@ -121,10 +123,10 @@ class _YatraScreenState extends State<YatraScreen> {
     final r = result;
     final a = advice;
     if (r == null || a == null) return;
-    final dest = toName.text.isEmpty ? 'tumhare shahar' : toName.text;
+    final dest = toName.text.isEmpty ? 'तुम्हारे शहर' : toName.text;
     await uma.speak(
-      'Suno. ${widget.fromName} se $dest ${r.direction} disha mein hai. '
-      'Aaj dishashool ${DishaService.avoided(selectedDate)} mein hai. ${a.summary}',
+      'सुनो। ${widget.fromName} से $dest ${r.direction} दिशा में है। '
+      'आज दिशाशूल ${DishaService.avoided(selectedDate)} में है। ${a.summary}',
     );
   }
 
@@ -136,14 +138,14 @@ class _YatraScreenState extends State<YatraScreen> {
     final r = result;
     final a = advice;
     return Scaffold(
-      appBar: AppBar(title: const Text('Yatra muhurat')),
+      appBar: AppBar(title: const Text('🚗 यात्रा मुहूर्त')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_month),
-              title: const Text('Yatra ki tarikh'),
+              title: const Text('यात्रा की तारीख'),
               subtitle: Text('${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
               trailing: const Icon(Icons.edit_calendar),
               onTap: pickDate,
@@ -154,7 +156,7 @@ class _YatraScreenState extends State<YatraScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'From: ${widget.fromName}\nUs din ka dishashool: ${DishaService.avoided(selectedDate)}',
+                'From: ${widget.fromName}\nउस दिन का दिशाशूल: ${DishaService.avoided(selectedDate)}',
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -163,15 +165,15 @@ class _YatraScreenState extends State<YatraScreen> {
           TextField(
             controller: toName,
             decoration: InputDecoration(
-              labelText: 'Gantavya shahar / gaon',
-              hintText: 'jaise Mumbai, Ujjain, Vadodara',
+              labelText: 'गंतव्य शहर / गाँव',
+              hintText: 'जैसे Mumbai, Ujjain, Vadodara',
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () async {
-                  final r = await geo.search(toName.text);
+                  final places = await geo.search(toName.text);
                   if (!mounted) return;
-                  setState(() => suggestions = r);
+                  setState(() => suggestions = places);
                 },
               ),
             ),
@@ -180,31 +182,35 @@ class _YatraScreenState extends State<YatraScreen> {
                 setState(() => suggestions = const []);
                 return;
               }
-              final r = await geo.search(v);
+              final places = await geo.search(v);
               if (!mounted) return;
-              setState(() => suggestions = r);
+              setState(() => suggestions = places);
             },
           ),
           if (suggestions.isNotEmpty)
             Card(
               child: Column(
-                children: suggestions.map((p) => ListTile(
-                  title: Text(p.displayName),
-                  subtitle: Text('${p.latitude.toStringAsFixed(5)}, ${p.longitude.toStringAsFixed(5)}'),
-                  onTap: () => setState(() {
-                    toName.text = p.displayName;
-                    toLat.text = p.latitude.toString();
-                    toLon.text = p.longitude.toString();
-                    suggestions = const [];
-                  }),
-                )).toList(),
+                children: suggestions
+                    .map(
+                      (p) => ListTile(
+                        title: Text(p.displayName),
+                        subtitle: Text('${p.latitude.toStringAsFixed(5)}, ${p.longitude.toStringAsFixed(5)}'),
+                        onTap: () => setState(() {
+                          toName.text = p.displayName;
+                          toLat.text = p.latitude.toString();
+                          toLon.text = p.longitude.toString();
+                          suggestions = const [];
+                        }),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: calculate,
             icon: const Icon(Icons.navigation_rounded),
-            label: const Text('Disha + shubh yatra samay'),
+            label: const Text('दिशा + शुभ यात्रा समय निकालें'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -222,7 +228,7 @@ class _YatraScreenState extends State<YatraScreen> {
               );
             },
             icon: const Icon(Icons.explore_rounded),
-            label: const Text('Vaidik disha-soochak kholen'),
+            label: const Text('वैदिक दिशा-सूचक खोलें'),
           ),
           if (r != null && a != null) ...[
             const SizedBox(height: 16),
@@ -232,48 +238,47 @@ class _YatraScreenState extends State<YatraScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(' ${r.direction}',
-                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
+                    Text('🧭 ${r.direction}', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
                     const SizedBox(height: 8),
-                    Text('Bearing: ${r.bearing.toStringAsFixed(1)}'),
+                    Text('Bearing: ${r.bearing.toStringAsFixed(1)}°'),
                     const SizedBox(height: 10),
                     Text(
-                      r.directionShool ? 'Dishashool se prabhavit' : 'Dishashool se seedhe varjit nahi',
+                      r.directionShool ? '🔴 दिशाशूल से प्रभावित' : '🟢 दिशाशूल से सीधे वर्जित नहीं',
                       style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
                     const SizedBox(height: 8),
                     Text(a.summary),
                     if (a.blockedTimes.isNotEmpty) ...[
                       const SizedBox(height: 14),
-                      const Text('Rahu / Yamaganda / Gulika',
-                          style: TextStyle(fontWeight: FontWeight.w900)),
+                      const Text('🚫 राहु काल / यमगण्ड / गुलिक', style: TextStyle(fontWeight: FontWeight.w900)),
                       const SizedBox(height: 4),
-                      ...a.blockedTimes.map((p) => ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.block_rounded),
-                        title: Text('${p.name} • ${fmt(p.start)} – ${fmt(p.end)}'),
-                        subtitle: Text(p.meaning),
-                      )),
+                      ...a.blockedTimes.map(
+                        (p) => ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.block_rounded),
+                          title: Text('${p.name} • ${fmt(p.start)} – ${fmt(p.end)}'),
+                          subtitle: Text(p.meaning),
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 14),
-                    const Text('Behtar yatra window',
-                        style: TextStyle(fontWeight: FontWeight.w900)),
+                    const Text('⏰ अपेक्षाकृत बेहतर यात्रा विंडो', style: TextStyle(fontWeight: FontWeight.w900)),
                     const SizedBox(height: 6),
-                    ...a.suitable.take(6).map((p) => ListTile(
-                      dense: true,
-                      leading: Icon(
-                        p.nature == ChoghadiyaNature.auspicious
-                            ? Icons.check_circle
-                            : Icons.remove_circle_outline,
+                    ...a.suitable.take(6).map(
+                      (p) => ListTile(
+                        dense: true,
+                        leading: Icon(
+                          p.nature == ChoghadiyaNature.auspicious ? Icons.check_circle : Icons.remove_circle_outline,
+                        ),
+                        title: Text('${p.name} • ${fmt(p.start)} – ${fmt(p.end)}'),
+                        subtitle: Text(p.meaning),
                       ),
-                      title: Text('${p.name} • ${fmt(p.start)} – ${fmt(p.end)}'),
-                      subtitle: Text(p.meaning),
-                    )),
+                    ),
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: speak,
                       icon: const Icon(Icons.volume_up_rounded),
-                      label: const Text('Uma se sunen'),
+                      label: const Text('उमा से सुनें'),
                     ),
                   ],
                 ),
