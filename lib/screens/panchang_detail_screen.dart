@@ -1,16 +1,18 @@
+// lib/screens/panchang_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/astronomical_panchang.dart';
 import '../models/panchang_models.dart';
 import '../services/astronomical_panchang_service.dart';
-import '../services/calc_settings.dart';
 import '../services/choghadiya_service.dart';
-import '../services/disha_service.dart';
 import '../services/inauspicious_service.dart';
 import '../services/muhurat_engine.dart';
-import '../services/panchang_boundary_service.dart';
-import '../services/xalen_service.dart';
-import 'uma_screen.dart';
+import '../services/hora_panchak_yoga_service.dart';
+import '../services/whatsapp_panchang_share_service.dart';
 import '../services/bhojpatra_pdf_service.dart';
+import '../services/disha_service.dart';
+import '../widgets/flutter_panchang_cards.dart';
+import 'uma_screen.dart';
 
 class PanchangDetailScreen extends StatefulWidget {
   final DateTime date;
@@ -35,8 +37,7 @@ class PanchangDetailScreen extends StatefulWidget {
 class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
   late DateTime _date;
   late AstronomicalPanchang _data;
-  CalcSettings _s = const CalcSettings();
-  int _tab = 0;
+  int _activeTab = 0;
 
   static const _wd = {
     1: 'सोमवार', 2: 'मंगलवार', 3: 'बुधवार', 4: 'गुरुवार',
@@ -48,9 +49,12 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
     super.initState();
     _date = widget.date;
     _data = widget.data;
-    CalcSettingsStore().load().then((v) {
-      if (mounted) setState(() => _s = v);
-    });
+  }
+
+  String get _samvat {
+    var y = _date.year + 57;
+    if (_date.month < 4) y -= 1;
+    return 'विक्रम $y';
   }
 
   String _hm(DateTime t) =>
@@ -70,6 +74,48 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
     });
   }
 
+  void _shareWhatsAppSuprabhat() {
+    final solar = SolarTimes(
+      sunrise: _data.localSunrise,
+      sunset: _data.localSunset,
+      nextSunrise: _data.nextLocalSunrise,
+    );
+    final muhurat = MuhuratEngine().dailyNamed(solar: solar, weekday: _date.weekday);
+    final inaus = InauspiciousService.daytime(solar.sunrise, solar.sunset, _date.weekday);
+    final panchak = HoraPanchakYogaService.calculatePanchak(nakshatra: _data.nakshatra, weekdayNumber: _date.weekday);
+    final bhadra = HoraPanchakYogaService.calculateBhadra(karana: _data.karana, lunarRashi: _data.lunarRashiName, sunrise: _data.localSunrise, sunset: _data.localSunset);
+    final specialYogas = HoraPanchakYogaService.calculateSpecialYogas(nakshatra: _data.nakshatra, weekdayNumber: _date.weekday, tithi: _data.tithi);
+    final abhijit = muhurat.where((m) => m.title.contains('अभिजित')).firstOrNull;
+    final rahu = inaus.where((m) => m.title.contains('राहु')).firstOrNull;
+    final shareText = WhatsAppPanchangShareService.buildWhatsAppShareText(
+      date: _date,
+      weekday: _wd[_date.weekday] ?? 'सोमवार',
+      tithi: _data.tithi,
+      paksha: _data.paksha,
+      masa: _data.masa,
+      samvat: _samvat,
+      nakshatra: _data.nakshatra,
+      yoga: _data.yoga,
+      karana: _data.karana,
+      sunrise: _hm(_data.localSunrise),
+      sunset: _hm(_data.localSunset),
+      lunarRashi: _data.lunarRashiName,
+      solarRashi: _data.solarRashi,
+      abhijitMuhurat: abhijit != null ? '${_hm(abhijit.start)} - ${_hm(abhijit.end)}' : 'आज नहीं',
+      rahuKaal: rahu != null ? '${_hm(rahu.start)} - ${_hm(rahu.end)}' : '—',
+      panchakName: panchak.typeNameHindi,
+      bhadraStatus: bhadra.isActive ? '${bhadra.vas} (${bhadra.nature == "varjya" ? "वर्जित" : "शुभ"})' : 'भद्रा मुक्त',
+      specialYogas: specialYogas.map((y) => y.name).toList(),
+      locationName: widget.place,
+    );
+    SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'सनातन शक्ति पंचांग - ${_wd[_date.weekday]}',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final solar = SolarTimes(
@@ -77,22 +123,51 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
       sunset: _data.localSunset,
       nextSunrise: _data.nextLocalSunrise,
     );
+    final specialYogas = HoraPanchakYogaService.calculateSpecialYogas(
+      nakshatra: _data.nakshatra,
+      weekdayNumber: _date.weekday,
+      tithi: _data.tithi,
+    );
+    final panchak = HoraPanchakYogaService.calculatePanchak(
+      nakshatra: _data.nakshatra,
+      weekdayNumber: _date.weekday,
+    );
+    final bhadra = HoraPanchakYogaService.calculateBhadra(
+      karana: _data.karana,
+      lunarRashi: _data.lunarRashiName,
+      sunrise: _data.localSunrise,
+      sunset: _data.localSunset,
+    );
+    final horas = HoraPanchakYogaService.calculate24Horas(
+      sunrise: _data.localSunrise,
+      sunset: _data.localSunset,
+      nextSunrise: _data.nextLocalSunrise,
+      weekdayNumber: _date.weekday,
+    );
+    final currentHora = horas.where((h) => h.isActive).firstOrNull;
     final muhurat = MuhuratEngine().dailyNamed(solar: solar, weekday: _date.weekday);
     final tyajya = {'राहु काल', 'यमगण्ड', 'गुलिक काल', 'निशीथ काल'};
-    final shool = DishaService.avoided(_date);
-    final dayCh = ChoghadiyaService.day(solar, _date.weekday);
     final inaus = InauspiciousService.daytime(solar.sunrise, solar.sunset, _date.weekday);
-    final moonRashi = const [
-      'मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या',
-      'तुला','वृश्चिक','धनु','मकर','कुंभ','मीन',
-    ][(_data.lunarLongitude / 30).floor() % 12];
+    final dayCh = ChoghadiyaService.day(solar, _date.weekday);
+    final shool = DishaService.avoided(_date);
+    final dayDurationHours = _data.localSunset.difference(_data.localSunrise).inMinutes / 60.0;
+    final nightDurationHours = _data.nextLocalSunrise.difference(_data.localSunset).inMinutes / 60.0;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFBF6EE),
       appBar: AppBar(
-        title: const Text('पूरा पंचांग'),
+        backgroundColor: const Color(0xFF381E0C),
+        foregroundColor: const Color(0xFFFEE180),
+        elevation: 0,
+        title: const Text('सनातन शक्ति पंचांग', style: TextStyle(fontWeight: FontWeight.w900)),
         actions: [
           IconButton(
-            tooltip: 'PDF',
+            tooltip: 'व्हाट्सएप शेयर',
+            icon: const Icon(Icons.share, color: Color(0xFF25D366)),
+            onPressed: _shareWhatsAppSuprabhat,
+          ),
+          IconButton(
+            tooltip: 'भोजपत्र PDF',
             icon: const Icon(Icons.picture_as_pdf_outlined),
             onPressed: () => BhojpatraPdfService.panchang(
               p: _data,
@@ -101,8 +176,8 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'उमा',
-            icon: const Icon(Icons.auto_awesome),
+            tooltip: 'उमा AI',
+            icon: const Icon(Icons.auto_awesome, color: Color(0xFFF9D976)),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -113,119 +188,134 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         children: [
-          Row(
-            children: [
-              IconButton(onPressed: () => _shift(-1), icon: const Icon(Icons.chevron_left)),
-              Expanded(
-                child: Text(
-                  '${_wd[_date.weekday]}  ${_date.day}/${_date.month}/${_date.year}\n${widget.place}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5D5BC)),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () => _shift(-1),
+                  icon: const Icon(Icons.chevron_left, color: Color(0xFF5C3A21)),
                 ),
-              ),
-              IconButton(onPressed: () => _shift(1), icon: const Icon(Icons.chevron_right)),
-            ],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        '${_wd[_date.weekday]}  ${_date.day}/${_date.month}/${_date.year}',
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF381E0C)),
+                      ),
+                      Text(
+                        widget.place,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF8C5D35), fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _shift(1),
+                  icon: const Icon(Icons.chevron_right, color: Color(0xFF5C3A21)),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _chip(0, 'अंग'),
-              _chip(1, 'मुहूर्त'),
-              _chip(2, 'दिशा'),
-            ],
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _tabChip(0, '🪔 मुख्य'),
+                _tabChip(1, '♄ गोचर'),
+                _tabChip(2, '⏳ होरा (२४ h)'),
+                _tabChip(3, '✨ मुहूर्त'),
+                _tabChip(4, '🔭 खगोल'),
+                _tabChip(5, '🧭 दिशा'),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
-          if (_tab == 0) ...[
-            _kv('पक्ष / तिथि', '${_data.paksha}  ${_data.tithi}  (${(_data.tithiProgress * 100).round()}%)'),
-            _kv('नक्षत्र', '${_data.nakshatra}  (${(_data.nakshatraProgress * 100).round()}%)'),
-            _kv('योग', _data.yoga),
-            _kv('करण', _data.karana),
-            _kv('सूर्य राशि', _data.solarRashi),
-            _kv('चंद्र राशि', moonRashi),
-            _kv('अयनांश', '${_data.ayanamshaName}  ${_data.ayanamsha.toStringAsFixed(4)}°'),
-            _kv('सूर्योदय', _hm(_data.localSunrise)),
-            _kv('सूर्यास्त', _hm(_data.localSunset)),
+          if (_activeTab == 0) ...[
+            HeroTithiCard(
+              tithi: _data.tithi,
+              paksha: _data.paksha,
+              masa: _data.masa,
+              samvat: _samvat,
+              progress: _data.tithiProgress,
+            ),
+            const SizedBox(height: 10),
+            SpecialYogaBanner(yogas: specialYogas),
+            PanchakBhadraRow(panchak: panchak, bhadra: bhadra),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: _angaCard('🌟 नक्षत्र', _data.nakshatra, 'चरण ${_data.nakshatraPada}')),
+                const SizedBox(width: 8),
+                Expanded(child: _angaCard('☯️ योग', _data.yoga, 'दैनिक योग')),
+              ],
+            ),
             const SizedBox(height: 8),
-            FutureBuilder(
-              future: PanchangBoundaryService(AstronomyEngineService()).calculate(_date),
-              builder: (context, snap) {
-                if (!snap.hasData) {
-                  return const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  );
-                }
-                final b = snap.data!;
-                String f(DateTime x) =>
-                    '${x.hour.toString().padLeft(2, '0')}:${x.minute.toString().padLeft(2, '0')}';
-                return Column(
-                  children: [
-                    _kv('तिथि आरंभ–समाप्ति', '${f(b.tithi.start)} – ${f(b.tithi.end)}  → ${b.tithi.nextName}'),
-                    _kv('नक्षत्र आरंभ–समाप्ति', '${f(b.nakshatra.start)} – ${f(b.nakshatra.end)}  → ${b.nakshatra.nextName}'),
-                    _kv('योग आरंभ–समाप्ति', '${f(b.yoga.start)} – ${f(b.yoga.end)}  → ${b.yoga.nextName}'),
-                    _kv('करण', '${f(b.karana.start)}  ${b.karana.currentName}'),
-                  ],
-                );
-              },
-            ),
-            const Divider(),
-            const Text('गणना विकल्प', style: TextStyle(fontWeight: FontWeight.w900)),
-            DropdownButtonFormField<String>(
-              key: ValueKey('aya-${_s.ayanamsha}'),
-              initialValue: _s.ayanamsha,
-              decoration: const InputDecoration(labelText: 'अयनांश'),
-              items: const [
-                DropdownMenuItem(value: 'lahiri', child: Text('लाहिरी')),
-                DropdownMenuItem(value: 'raman', child: Text('रमन')),
-                DropdownMenuItem(value: 'kp', child: Text('के.पी.')),
+            Row(
+              children: [
+                Expanded(child: _angaCard('⚡ करण', _data.karana, 'आधा तिथि मान')),
+                const SizedBox(width: 8),
+                Expanded(child: _angaCard('♈ राशि', 'चन्द्र: ${_data.lunarRashiName}', 'सूर्य: ${_data.solarRashi}')),
               ],
-              onChanged: (v) async {
-                if (v == null) return;
-                final n = _s.copyWith(ayanamsha: v);
-                await CalcSettingsStore().save(n);
-                final p = await AstronomicalPanchangService().calculate(
-                  date: _date, latitude: widget.lat, longitude: widget.lon,
-                );
-                if (!mounted) return;
-                setState(() {
-                  _s = n;
-                  _data = p;
-                });
-              },
             ),
-            DropdownButtonFormField<String>(
-              key: ValueKey('node-${_s.nodeType}'),
-              initialValue: _s.nodeType,
-              decoration: const InputDecoration(labelText: 'राहु'),
-              items: const [
-                DropdownMenuItem(value: 'mean', child: Text('मध्य राहु')),
-                DropdownMenuItem(value: 'true', child: Text('सत्य राहु')),
-              ],
-              onChanged: (v) async {
-                if (v == null) return;
-                final n = _s.copyWith(nodeType: v);
-                await CalcSettingsStore().save(n);
-                if (mounted) setState(() => _s = n);
-              },
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF25D366),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              onPressed: _shareWhatsAppSuprabhat,
+              icon: const Icon(Icons.share),
+              label: const Text('📲 व्हाट्सएप सुप्रभात पंचांग कार्ड भेजें', style: TextStyle(fontWeight: FontWeight.w900)),
             ),
-            DropdownButtonFormField<String>(
-              key: ValueKey('house-${_s.houseSystem}'),
-              initialValue: _s.houseSystem,
-              decoration: const InputDecoration(labelText: 'भाव'),
-              items: const [
-                DropdownMenuItem(value: 'whole', child: Text('राशि-भाव')),
-                DropdownMenuItem(value: 'sripati', child: Text('श्रीपति')),
-              ],
-              onChanged: (v) async {
-                if (v == null) return;
-                final n = _s.copyWith(houseSystem: v);
-                await CalcSettingsStore().save(n);
-                if (mounted) setState(() => _s = n);
-              },
-            ),
-          ] else if (_tab == 1) ...[
+          ] else if (_activeTab == 1) ...[
+            _sectionHeader('♄ प्रत्यक्ष ग्रह गोचर'),
+            _kv('सूर्य राशि', _data.solarRashi),
+            _kv('चन्द्र राशि', _data.lunarRashiName),
+            _kv('नक्षत्र', '${_data.nakshatra} (चरण ${_data.nakshatraPada})'),
+            _kv('अयनांश', '${_data.ayanamshaName} ${_data.ayanamsha.toStringAsFixed(4)}°'),
+          ] else if (_activeTab == 2) ...[
+            _sectionHeader('⏳ दैनिक २४ घंटे होरा चक्र'),
+            if (currentHora != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3CD),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFFFC107)),
+                ),
+                child: Text(
+                  '🌟 वर्तमान सक्रिय: ${currentHora.symbol} ${currentHora.planet} होरा (${_hm(currentHora.start)}–${_hm(currentHora.end)})',
+                  style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF664D03)),
+                ),
+              ),
+            ...horas.map((h) => Card(
+              color: h.isActive ? const Color(0xFFFFF8E1) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: h.isActive ? const Color(0xFFFFA000) : Colors.black12),
+              ),
+              child: ListTile(
+                dense: true,
+                leading: Text(h.symbol, style: const TextStyle(fontSize: 20)),
+                title: Text('${h.planet} होरा (${h.isDay ? "दिन" : "रात्रि"})', style: const TextStyle(fontWeight: FontWeight.w800)),
+                subtitle: Text(h.description, style: const TextStyle(fontSize: 11)),
+                trailing: Text('${_hm(h.start)}–${_hm(h.end)}', style: const TextStyle(fontWeight: FontWeight.w900, fontFamily: 'monospace')),
+              ),
+            )),
+          ] else if (_activeTab == 3) ...[
+            _sectionHeader('✨ दैनिक शुभ व अशुभ मुहूर्त'),
             ...inaus.map((w) => _timeCard(w.title, _hm(w.start), _hm(w.end), tyajya: true)),
             ...muhurat.map((w) => _timeCard(
                   w.title,
@@ -235,14 +325,23 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
                   note: w.description,
                 )),
             const SizedBox(height: 8),
-            const Text('दिन चौघड़िया', style: TextStyle(fontWeight: FontWeight.w900)),
+            _sectionHeader('दिन चौघड़िया'),
             ...dayCh.map((c) => _timeCard(
                   '${c.name} — ${c.meaning}',
                   _hm(c.start),
                   _hm(c.end),
                   tyajya: c.nature == ChoghadiyaNature.inauspicious,
                 )),
-          ] else ...[
+          ] else if (_activeTab == 4) ...[
+            _sectionHeader('🔭 सूर्य व चन्द्र खगोलीय स्थिति'),
+            _kv('सूर्योदय', _hm(_data.localSunrise)),
+            _kv('सूर्यास्त', _hm(_data.localSunset)),
+            _kv('दिनमान', '${dayDurationHours.toStringAsFixed(2)} घंटे'),
+            _kv('रात्रिमान', '${nightDurationHours.toStringAsFixed(2)} घंटे'),
+            _kv('अक्षांश', '${widget.lat.toStringAsFixed(4)}° N'),
+            _kv('देशांतर', '${widget.lon.toStringAsFixed(4)}° E'),
+          ] else if (_activeTab == 5) ...[
+            _sectionHeader('🧭 आज का दिशाशूल'),
             Card(
               color: const Color(0xFFFFF4DC),
               child: ListTile(
@@ -257,35 +356,62 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
     );
   }
 
-  Widget _chip(int i, String t) => Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: _tab == i ? const Color(0xFF5C3A21) : const Color(0xFFF4E8D1),
-              foregroundColor: _tab == i ? Colors.white : const Color(0xFF5C3A21),
-            ),
-            onPressed: () => setState(() => _tab = i),
-            child: Text(t),
-          ),
-        ),
-      );
+  Widget _tabChip(int i, String label) {
+    final isSelected = _activeTab == i;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: ChoiceChip(
+        label: Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isSelected ? Colors.white : const Color(0xFF5C3A21))),
+        selected: isSelected,
+        selectedColor: const Color(0xFF5C3A21),
+        backgroundColor: Colors.white,
+        onSelected: (_) => setState(() => _activeTab = i),
+      ),
+    );
+  }
+
+  Widget _angaCard(String title, String val, String sub) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: const Color(0xFFE5D5BC)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF8C5D35))),
+        const SizedBox(height: 3),
+        Text(val, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF381E0C))),
+        Text(sub, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+      ],
+    ),
+  );
+
+  Widget _sectionHeader(String title) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF381E0C))),
+  );
 
   Widget _kv(String k, String v) => Card(
-        child: ListTile(
-          dense: true,
-          title: Text(k, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-          subtitle: Text(v, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ),
-      );
+    margin: const EdgeInsets.only(bottom: 6),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: ListTile(
+      dense: true,
+      title: Text(k, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+      trailing: Text(v, style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF5C3A21))),
+    ),
+  );
 
   Widget _timeCard(String title, String a, String b, {bool tyajya = false, String? note}) => Card(
-        color: tyajya ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9),
-        child: ListTile(
-          dense: true,
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
-          subtitle: note == null ? null : Text(note),
-          trailing: Text('$a–$b', style: const TextStyle(fontWeight: FontWeight.w900)),
-        ),
-      );
+    margin: const EdgeInsets.only(bottom: 6),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    color: tyajya ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9),
+    child: ListTile(
+      dense: true,
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+      subtitle: note == null ? null : Text(note, style: const TextStyle(fontSize: 11)),
+      trailing: Text('$a–$b', style: const TextStyle(fontWeight: FontWeight.w900, fontFamily: 'monospace')),
+    ),
+  );
 }
