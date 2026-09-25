@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/kundali_model.dart';
 import 'bhojpatra_pdf_service.dart';
+import 'exhaustive_kundali_pdf_service.dart';
 
 /// On-device भोजपत्र PDF (वेब ऐप जैसी पत्रिका)। पुराना PHP सर्वर नहीं।
 class PdfService {
@@ -19,6 +20,26 @@ class PdfService {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('PDF त्रुटि: $e')),
+        );
+      }
+    }
+  }
+
+  static Future<void> generateExhaustiveKundali(
+    BuildContext context,
+    KundaliData data,
+  ) async {
+    try {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('सम्पूर्ण विस्तृत कुंडली पत्रिका बन रही है…')),
+        );
+      }
+      await ExhaustiveKundaliPdfService.generate(data);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('विस्तृत PDF त्रुटि: $e')),
         );
       }
     }
