@@ -1,23 +1,71 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+
 import '../models/astronomical_panchang.dart';
 import '../models/kundali_model.dart';
 import 'advanced_kundali_service.dart';
 import 'kundali_analysis_service.dart';
+import 'pdf_devanagari_fonts.dart';
 
-/// ऑन-डिवाइस भोजपत्र PDF — वेब ऐप जैसी पत्रिका, PHP सर्वर नहीं।
+/// ऑन-डिवाइस भोजपत्र PDF — वेब ऐप जैसी पत्रिका।
+/// फ़ॉन्ट ऐप में एम्बेड हैं, इसलिए नेट बंद होने पर पन्ना खाली नहीं रहता।
 class BhojpatraPdfService {
   static const _bg = PdfColor.fromInt(0xFFFBF3E0);
+  static const _card = PdfColor.fromInt(0xFFFFFCF7);
   static const _brown = PdfColor.fromInt(0xFF5C3A21);
   static const _gold = PdfColor.fromInt(0xFFC58F27);
   static const _red = PdfColor.fromInt(0xFF8B1E1E);
+  static const _muted = PdfColor.fromInt(0xFF6B5748);
+
+  static const _rashis = [
+    'मेष', 'वृषभ', 'मिथुन', 'कर्क', 'सिंह', 'कन्या',
+    'तुला', 'वृश्चिक', 'धनु', 'मकर', 'कुंभ', 'मीन',
+  ];
+
+  static pw.Font? _regular;
+  static pw.Font? _bold;
+
+  static pw.Font _fontFromB64(String b64) {
+    final bytes = Uint8List.fromList(base64Decode(b64.replaceAll('\n', '')));
+    return pw.Font.ttf(ByteData.view(bytes.buffer));
+  }
 
   static Future<({pw.Font regular, pw.Font bold})> _fonts() async {
-    return (
-      regular: await PdfGoogleFonts.notoSansDevanagariRegular(),
-      bold: await PdfGoogleFonts.notoSansDevanagariBold(),
-    );
+    if (_regular != null && _bold != null) {
+      return (regular: _regular!, bold: _bold!);
+    }
+    try {
+      _regular = _fontFromB64(kPdfDevaRegularB64);
+      _bold = _fontFromB64(kPdfDevaBoldB64);
+      return (regular: _regular!, bold: _bold!);
+    } catch (_) {
+      try {
+        final r = await rootBundle.load('assets/fonts/NotoSerifDevanagari-Regular.ttf');
+        final b = await rootBundle.load('assets/fonts/NotoSerifDevanagari-Bold.ttf');
+        _regular = pw.Font.ttf(r);
+        _bold = pw.Font.ttf(b);
+        return (regular: _regular!, bold: _bold!);
+      } catch (_) {
+        final pair = (
+          regular: await PdfGoogleFonts.notoSansDevanagariRegular(),
+          bold: await PdfGoogleFonts.notoSansDevanagariBold(),
+        );
+        _regular = pair.regular;
+        _bold = pair.bold;
+        return pair;
+      }
+    }
+  }
+
+  static String _rashi(double lon) {
+    final i = ((lon % 360) / 30).floor() % 12;
+    final deg = (lon % 360) - i * 30;
+    return '${_rashis[i]}  ${deg.toStringAsFixed(2)}°';
   }
 
   static Future<void> kundali(KundaliData d) async {
@@ -64,7 +112,7 @@ class BhojpatraPdfService {
                       ...body,
                       pw.Spacer(),
                       pw.Center(
-                        child: pw.Text('शक्ति पंचांग • व्यक्तिगत ज्योतिष पत्रिका • Swiss नहीं',
+                        child: pw.Text('शक्ति पंचांग • व्यक्तिगत ज्योतिष पत्रिका',
                             style: pw.TextStyle(font: f.regular, fontSize: 8, color: _gold)),
                       ),
                     ],
@@ -170,7 +218,7 @@ class BhojpatraPdfService {
         h('बचें'),
         ...remedy.avoid.take(6).map(p),
         h('घोषणा'),
-        p('यह पत्रिका शक्ति पंचांग के लाहिरी/मीयस इंजन से बनी है। Swiss Ephemeris नहीं। '
+        p('यह पत्रिका शक्ति पंचांग से बनी है। '
           'फलित सामान्य शास्त्र-संकेत हैं, भाग्य-लेख नहीं। विवाह, स्वास्थ्य, धन के निर्णय '
           'केवल इसी PDF से न लें। रत्न/अनुष्ठान योग्य आचार्य की सलाह से करें।'),
         p('शक्ति पंचांग • Powered by SHIV SHAKTI'),
@@ -191,48 +239,74 @@ class BhojpatraPdfService {
     final doc = pw.Document();
     String hm(DateTime t) =>
         '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+    final weekday = const {
+      1: 'सोमवार', 2: 'मंगलवार', 3: 'बुधवार', 4: 'गुरुवार',
+      5: 'शुक्रवार', 6: 'शनिवार', 7: 'रविवार',
+    }[date.weekday] ?? '';
+
     doc.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(22),
       build: (_) => pw.Container(
         color: _bg,
-        padding: const pw.EdgeInsets.all(24),
-        child: pw.Container(
-          decoration: pw.BoxDecoration(border: pw.Border.all(color: _red, width: 2.4)),
-          padding: const pw.EdgeInsets.all(16),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(child: pw.Text('॥ श्री गणेशाय नमः ॥', style: pw.TextStyle(font: f.bold, color: _red))),
-              pw.SizedBox(height: 8),
-              pw.Center(
-                  child: pw.Text('दैनिक भोजपत्र पंचांग',
-                      style: pw.TextStyle(font: f.bold, fontSize: 18, color: _brown))),
-              pw.SizedBox(height: 6),
-              pw.Center(
-                  child: pw.Text('$place  •  ${date.day}/${date.month}/${date.year}',
-                      style: pw.TextStyle(font: f.regular, fontSize: 11, color: _brown))),
-              pw.SizedBox(height: 16),
-              _row(f, 'पक्ष / तिथि', '${p.paksha} ${p.tithi}'),
-              _row(f, 'नक्षत्र', p.nakshatra),
-              _row(f, 'योग', p.yoga),
-              _row(f, 'करण', p.karana),
-              _row(f, 'सूर्य राशि', p.solarRashi),
-              _row(f, 'अयनांश', '${p.ayanamshaName} ${p.ayanamsha.toStringAsFixed(4)}°'),
-              _row(f, 'सूर्योदय', hm(p.localSunrise)),
-              _row(f, 'सूर्यास्त', hm(p.localSunset)),
-              _row(f, 'इंजन', p.engine),
-              pw.SizedBox(height: 16),
-              pw.Text(
-                'आज सात्विक कार्य सूर्योदय के बाद करें। राहुकाल में नया शुभ कार्य न लगाएँ। '
-                'यह पंचांग स्थानीय सूर्योदय पर आधारित है।',
-                style: pw.TextStyle(font: f.regular, fontSize: 10, color: _brown),
-              ),
-              pw.Spacer(),
-              pw.Center(
-                  child: pw.Text('शक्ति पंचांग • ₹99/वर्ष • Swiss नहीं',
-                      style: pw.TextStyle(font: f.regular, fontSize: 8, color: _gold))),
-            ],
-          ),
+        padding: const pw.EdgeInsets.all(18),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+          children: [
+            pw.Center(
+              child: pw.Text('॥ श्री गणेशाय नमः ॥',
+                  style: pw.TextStyle(font: f.bold, fontSize: 11, color: _red)),
+            ),
+            pw.SizedBox(height: 6),
+            pw.Center(
+              child: pw.Text('पूरा पंचांग',
+                  style: pw.TextStyle(font: f.bold, fontSize: 20, color: _brown)),
+            ),
+            pw.Center(
+              child: pw.Text('शक्ति पंचांग  •  दैनिक पत्रिका',
+                  style: pw.TextStyle(font: f.regular, fontSize: 10, color: _gold)),
+            ),
+            pw.SizedBox(height: 12),
+            _chip(
+              f,
+              '$weekday  •  ${date.day}/${date.month}/${date.year}',
+              '$place  •  सूर्योदय के अनुसार',
+            ),
+            pw.SizedBox(height: 12),
+            pw.Row(children: [
+              pw.Expanded(child: _card(f, 'तिथि', '${p.paksha} ${p.tithi}', 'संख्या ${p.tithiNumber}')),
+              pw.SizedBox(width: 10),
+              pw.Expanded(child: _card(f, 'नक्षत्र', p.nakshatra, null)),
+            ]),
+            pw.SizedBox(height: 10),
+            pw.Row(children: [
+              pw.Expanded(child: _card(f, 'योग', p.yoga, null)),
+              pw.SizedBox(width: 10),
+              pw.Expanded(child: _card(f, 'करण', p.karana, null)),
+            ]),
+            pw.SizedBox(height: 10),
+            pw.Row(children: [
+              pw.Expanded(child: _card(f, 'सूर्य राशि', _rashi(p.solarLongitude), 'सूर्य ${p.solarLongitude.toStringAsFixed(2)}°')),
+              pw.SizedBox(width: 10),
+              pw.Expanded(child: _card(f, 'चंद्र राशि', _rashi(p.lunarLongitude), 'चंद्र ${p.lunarLongitude.toStringAsFixed(2)}°')),
+            ]),
+            pw.SizedBox(height: 12),
+            _row(f, 'अयनांश', '${p.ayanamshaName}  ${p.ayanamsha.toStringAsFixed(4)}°'),
+            _row(f, 'सूर्योदय', hm(p.localSunrise)),
+            _row(f, 'सूर्यास्त', hm(p.localSunset)),
+            pw.SizedBox(height: 14),
+            pw.Text(
+              'आज सात्विक कार्य सूर्योदय के बाद करें। राहुकाल में नया शुभ कार्य न लगाएँ। '
+              'यह पंचांग स्थानीय सूर्योदय पर आधारित है। स्थान सहेजा रहता है।',
+              style: pw.TextStyle(font: f.regular, fontSize: 10, color: _brown, lineSpacing: 2),
+            ),
+            pw.Spacer(),
+            pw.Center(
+              child: pw.Text('शक्ति पंचांग • Powered by SHIV SHAKTI',
+                  style: pw.TextStyle(font: f.regular, fontSize: 8, color: _gold)),
+            ),
+          ],
         ),
       ),
     ));
@@ -241,6 +315,43 @@ class BhojpatraPdfService {
       filename: 'Shakti_Panchang_${date.year}_${date.month}_${date.day}.pdf',
     );
   }
+
+  static pw.Widget _chip(({pw.Font regular, pw.Font bold}) f, String a, String b) =>
+      pw.Container(
+        padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: pw.BoxDecoration(
+          color: _card,
+          border: pw.Border.all(color: _gold, width: 0.8),
+          borderRadius: pw.BorderRadius.circular(10),
+        ),
+        child: pw.Column(children: [
+          pw.Text(a, style: pw.TextStyle(font: f.bold, fontSize: 12, color: _brown)),
+          pw.SizedBox(height: 2),
+          pw.Text(b, style: pw.TextStyle(font: f.regular, fontSize: 9, color: _muted)),
+        ]),
+      );
+
+  static pw.Widget _card(({pw.Font regular, pw.Font bold}) f, String k, String v, String? s) =>
+      pw.Container(
+        padding: const pw.EdgeInsets.fromLTRB(12, 10, 12, 10),
+        decoration: pw.BoxDecoration(
+          color: _card,
+          border: pw.Border.all(color: PdfColor.fromInt(0xFFEEE0D0), width: 0.8),
+          borderRadius: pw.BorderRadius.circular(10),
+        ),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(k, style: pw.TextStyle(font: f.regular, fontSize: 9, color: _muted)),
+            pw.SizedBox(height: 3),
+            pw.Text(v, style: pw.TextStyle(font: f.bold, fontSize: 13, color: _brown)),
+            if (s != null) ...[
+              pw.SizedBox(height: 2),
+              pw.Text(s, style: pw.TextStyle(font: f.regular, fontSize: 8, color: _muted)),
+            ],
+          ],
+        ),
+      );
 
   static pw.Widget _row(({pw.Font regular, pw.Font bold}) f, String k, String v) =>
       pw.Padding(
