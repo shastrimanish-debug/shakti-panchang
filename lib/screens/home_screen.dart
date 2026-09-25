@@ -10,6 +10,17 @@ import 'reminder_screen.dart';
 import 'shubh_samay_screen.dart';
 import 'numerology_screen.dart';
 import 'daily_rashifal_screen.dart';
+import 'vrat_katha_screen.dart';
+import 'kalnirnay_screen.dart';
+import 'sade_sati_screen.dart';
+import 'daily_shloka_screen.dart';
+import 'hora_chakra_screen.dart';
+import 'gochar_screen.dart';
+import 'annual_muhurat_screen.dart';
+import 'digital_compass_screen.dart';
+import 'moon_phase_screen.dart';
+import 'astrologer_branding_screen.dart';
+import 'varga_analysis_screen.dart';
 
 import '../models/panchang_models.dart';
 import '../services/solar_service.dart'; 
@@ -109,125 +120,75 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 20),
-
-          // उमा वॉयस असिस्टेंट स्मार्ट कार्ड
           _buildUmaVoiceAssistantCard(context),
           const SizedBox(height: 20),
-
-          // 1. Kundali Button
-          _homeNavCard(
-            context,
-            title: 'कुंडली निर्माण एवं विश्लेषण',
-            subtitle: 'जन्म विवरण डालें और सम्पूर्ण कुंडली ग्रंथ बनाएं',
-            icon: Icons.auto_awesome_rounded,
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const KundaliScreen()));
-            },
-          ),
+          _homeNavCard(context, title: 'कुंडली निर्माण एवं विश्लेषण', subtitle: 'जन्म विवरण डालें और सम्पूर्ण कुंडली ग्रंथ बनाएं', icon: Icons.auto_awesome_rounded, onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const KundaliScreen()));
+          }),
           const SizedBox(height: 16),
-
-          // 2. Panchang Button
-          _homeNavCard(
-            context,
-            title: 'दैनिक पंचांग (Panchang)',
-            subtitle: 'आज की तिथि, नक्षत्र, योग, करण और सूर्य स्थिति',
-            icon: Icons.calendar_month_rounded,
-            onTap: _openPanchang,
-          ),
+          _homeNavCard(context, title: 'दैनिक पंचांग (Panchang)', subtitle: 'आज की तिथि, नक्षत्र, योग, करण और सूर्य स्थिति', icon: Icons.calendar_month_rounded, onTap: _openPanchang),
           const SizedBox(height: 16),
-
-          // 3. Shubh Muhurat Button 
-          _homeNavCard(
-            context,
-            title: 'शुभ मुहूर्त (Shubh Muhurat)',
-            subtitle: 'विवाह, गृहप्रवेश और नए कार्यों के लिए श्रेष्ठ समय',
-            icon: Icons.access_time_filled_rounded,
-            onTap: _openMuhurat,
-          ),
+          _homeNavCard(context, title: 'शुभ मुहूर्त (Shubh Muhurat)', subtitle: 'विवाह, गृहप्रवेश और नए कार्यों के लिए श्रेष्ठ समय', icon: Icons.access_time_filled_rounded, onTap: _openMuhurat),
           const SizedBox(height: 16),
-
-          // 4. Yatra Muhurat & Dishashool Button
-          _homeNavCard(
-            context,
-            title: 'यात्रा मुहूर्त & दिशाशूल',
-            subtitle: 'आज का दिशाशूल और यात्रा के लिए शुभ दिशा',
-            icon: Icons.alt_route_rounded,
-            onTap: _openYatra,
-          ),
+          _homeNavCard(context, title: 'यात्रा मुहूर्त & दिशाशूल', subtitle: 'आज का दिशाशूल और यात्रा के लिए शुभ दिशा', icon: Icons.alt_route_rounded, onTap: _openYatra),
           const SizedBox(height: 16),
-
-          // 5. Festivals Button
-          _homeNavCard(
-            context,
-            title: 'व्रत एवं त्योहार (Festivals)',
-            subtitle: 'आगामी व्रत, एकादशी, पूर्णिमा और पर्व सूची',
-            icon: Icons.festival_rounded,
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => FestivalsScreen(date: now)));
-            },
-          ),
+          _homeNavCard(context, title: 'व्रत एवं त्योहार (Festivals)', subtitle: 'आगामी व्रत, एकादशी, पूर्णिमा और पर्व सूची', icon: Icons.festival_rounded, onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => FestivalsScreen(date: now)));
+          }),
           const SizedBox(height: 16),
-
-          // 6. Shubh Samay Button
-          _homeNavCard(
-            context,
-            title: 'श्रेष्ठ एवं अशुभ समय (Choghadiya)',
-            subtitle: 'दिन और रात के चौघड़िया व राहुकाल की जानकारी',
-            icon: Icons.timer_rounded,
-            onTap: () async {
-              try {
-                final astronomyEngine = AstronomyEngineService();
-                final p = await PanchangBoundaryService(astronomyEngine).calculate(now);
-                final dShool = DishaService.avoided(now);
-                if (!context.mounted) return;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ShubhSamayScreen(
-                      date: now,
-                      panchang: p,
-                      dishaShool: dShool,
-                    ),
+          _homeNavCard(context, title: 'श्रेष्ठ एवं अशुभ समय (Choghadiya)', subtitle: 'दिन और रात के चौघड़िया व राहुकाल की जानकारी', icon: Icons.timer_rounded, onTap: () async {
+            try {
+              final astronomyEngine = AstronomyEngineService();
+              final p = await PanchangBoundaryService(astronomyEngine).calculate(now);
+              final dShool = DishaService.avoided(now);
+              if (!context.mounted) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ShubhSamayScreen(
+                    date: now,
+                    panchang: p,
+                    dishaShool: dShool,
                   ),
-                );
-              } catch (e) {
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('शुभ समय लोड करने में त्रुटि: $e')),
-                );
-              }
-            },
-          ),
+                ),
+              );
+            } catch (e) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('शुभ समय लोड करने में त्रुटि: $e')),
+              );
+            }
+          }),
           const SizedBox(height: 16),
-
-          // 7. Reminders Button
-          _homeNavCard(
-            context,
-            title: 'स्मार्ट रिमाइंडर (Reminders)',
-            subtitle: 'व्रत और शुभ मुहूर्तों के लिए अलार्म व सूचनाएं',
-            icon: Icons.notifications_active_rounded,
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderScreen()));
-            },
-          ),
+          _homeNavCard(context, title: 'स्मार्ट रिमाइंडर (Reminders)', subtitle: 'व्रत और शुभ मुहूर्तों के लिए अलार्म व सूचनाएं', icon: Icons.notifications_active_rounded, onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderScreen()));
+          }),
           const SizedBox(height: 16),
-
-          _homeNavCard(
-            context,
-            title: 'दैनिक राशिफल (Daily Rashifal)',
-            subtitle: '12 राशियों के लिए आज का सामान्य राशिफल, करियर, धन, संबंध और स्वास्थ्य संकेत',
-            icon: Icons.wb_sunny_rounded,
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyRashifalScreen())),
-          ),
+          _homeNavCard(context, title: 'दैनिक राशिफल (Daily Rashifal)', subtitle: '12 राशियों के लिए आज का सामान्य राशिफल', icon: Icons.wb_sunny_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyRashifalScreen()))),
           const SizedBox(height: 16),
-
-          _homeNavCard(
-            context,
-            title: 'अंक ज्योतिष (Numerology)',
-            subtitle: 'मूलांक, भाग्यांक, नामांक, Soul और Personality numbers',
-            icon: Icons.pin_rounded,
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NumerologyScreen())),
-          ),
+          _homeNavCard(context, title: 'अंक ज्योतिष (Numerology)', subtitle: 'मूलांक, भाग्यांक, नामांक', icon: Icons.pin_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NumerologyScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'व्रत कथा एवं आरती', subtitle: 'सत्यनारायण, एकादशी, प्रदोष, करवा चौथ, चालीसा', icon: Icons.menu_book_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VratKathaScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'कालनिर्णय मासिक पंचांग', subtitle: 'तिथि ग्रिड, एकादशी-प्रदोष बिल्ले, विक्रम संवत्', icon: Icons.calendar_view_month_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const KalnirnayScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'शनि साढ़े साती', subtitle: 'चरण, ढैया, गोचर फल और वैदिक उपाय', icon: Icons.nights_stay_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SadeSatiScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'आज का श्लोक', subtitle: 'गीता, नीति और स्तोत्र का दैनिक संग्रह', icon: Icons.format_quote_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyShlokaScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'होरा चक्र', subtitle: 'दिन-रात की 24 होरा और वर्तमान ग्रह काल', icon: Icons.watch_later_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HoraChakraScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'दैनिक गोचर', subtitle: 'ग्रह गोचर चंद्र राशि से शुभ-अशुभ फल', icon: Icons.public, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GocharScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'मुहूर्त सारणी', subtitle: 'ब्रह्म, अभिजित, विजय, गोधूलि, प्रदोष', icon: Icons.table_chart_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnualMuhuratScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'वैदिक दिशा-सूचक', subtitle: 'दिशाशूल क्षेत्र, लक्ष्य दिशा, यात्रा कम्पास', icon: Icons.explore_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DigitalCompassScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'चन्द्र कला', subtitle: 'तिथि, पक्ष और चन्द्र प्रकाश प्रतिशत', icon: Icons.nightlight_round, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoonPhaseScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'वर्ग विश्लेषण', subtitle: 'षोडश वर्ग, विवाह-करियर-धन, अष्टकवर्ग', icon: Icons.hub_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VargaAnalysisScreen()))),
+          const SizedBox(height: 16),
+          _homeNavCard(context, title: 'ज्योतिषी ब्रांडिंग', subtitle: 'कुंडली PDF आवरण पर नाम, नगर, संस्थान', icon: Icons.badge_outlined, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AstrologerBrandingScreen()))),
         ],
       ),
     );
@@ -244,11 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _bhojBorder, width: 1.5),
           boxShadow: const [
-            BoxShadow(
-              color: Color(0x335C3A21),
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            ),
+            BoxShadow(color: Color(0x335C3A21), blurRadius: 6, offset: Offset(0, 3)),
           ],
         ),
         child: Row(
@@ -256,28 +213,16 @@ class _HomeScreenState extends State<HomeScreen> {
             const CircleAvatar(
               radius: 30,
               backgroundColor: _bhojBrown,
-              child: Icon(
-                Icons.mic_rounded, 
-                color: _bhojBg, 
-                size: 34,
-              ),
+              child: Icon(Icons.mic_rounded, color: _bhojBg, size: 34),
             ),
             const SizedBox(width: 16),
             const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'नमस्ते, मैं उमा हूँ! 🎙️',
-                    style: TextStyle(fontWeight: FontWeight.w900, color: _bhojBrown, fontSize: 17),
-                  ),
+                  Text('नमस्ते, मैं उमा हूँ! 🎙️', style: TextStyle(fontWeight: FontWeight.w900, color: _bhojBrown, fontSize: 17)),
                   SizedBox(height: 4),
-                  Text(
-                    'टैप करके मुझसे ज्योतिषीय चर्चा करें...',
-                    style: TextStyle(fontSize: 13, color: Colors.black87),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text('टैप करके मुझसे ज्योतिषीय चर्चा करें...', style: TextStyle(fontSize: 13, color: Colors.black87), maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
@@ -318,15 +263,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.w900, color: _bhojBrown, fontSize: 17),
-                    ),
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: _bhojBrown, fontSize: 17)),
                     const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
-                    ),
+                    Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4)),
                   ],
                 ),
               ),
