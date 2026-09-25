@@ -191,7 +191,7 @@ class _GocharScreenState extends State<GocharScreen> {
                 MaterialPageRoute(
                   builder: (_) => UmaScreen(
                     date: DateTime.now(),
-                    pageContext: const ['दैनिक गोचर'],
+                    pageContext: 'दैनिक गोचर',
                     pageDescription: 'आज का नवग्रह गोचर फल और सात्विक उपाय',
                   ),
                 ),
