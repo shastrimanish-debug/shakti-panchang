@@ -5,14 +5,13 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import '../models/astrologer_branding.dart';
 import '../models/kundali_model.dart';
 import 'advanced_kundali_service.dart';
 import 'astrologer_branding_store.dart';
 import 'kundali_analysis_service.dart';
 import 'pdf_devanagari_fonts.dart';
 
-/// Webapp exhaustiveKundaliPdf.ts (59-page mahapatrika) ka on-device sanskaran.
+/// Webapp exhaustiveKundaliPdf.ts (59-page mahapatrika) ka on-device Hindi sanskaran.
 class ExhaustiveKundaliPdfService {
   static const _bg = PdfColor.fromInt(0xFFFBF3E0);
   static const _brown = PdfColor.fromInt(0xFF5C3A21);
@@ -20,45 +19,45 @@ class ExhaustiveKundaliPdfService {
   static const _red = PdfColor.fromInt(0xFF8B1E1E);
 
   static const _housePhal = [
-    'Pratham bhava — tanu, swabhav, aakriti, swasthya ka mool aur jeevan ki disha.',
-    'Dwitiya bhava — dhan, vani, parivar.',
-    'Tritiya bhava — parakram, sahodar, laghu yatra.',
-    'Chaturtha bhava — mata, sukh, vahan, bhumi.',
-    'Panchama bhava — santan, vidya, buddhi, mantra.',
-    'Shashtha bhava — shatru, rin, rog, seva.',
-    'Saptama bhava — vivah, sajhedari, lok vyavahar.',
-    'Ashtama bhava — aayu, gupt dhan, shodh.',
-    'Navama bhava — dharma, guru, bhagya, teerth.',
-    'Dashama bhava — karma, pad, yash, aajivika.',
-    'Ekadasha bhava — labh, mitra, manorath siddhi.',
-    'Dwadasha bhava — vyaya, moksha, videsh, shayan.',
+    'प्रथम भाव — तनु, स्वभाव, आकृति, स्वास्थ्य का मूल और जीवन की दिशा।',
+    'द्वितीय भाव — धन संग्रह, वाणी, परिवार, आँख और भोजन।',
+    'तृतीय भाव — पराक्रम, सहोदर, लघु यात्रा, लेखन और साहस।',
+    'चतुर्थ भाव — माता, सुख, वाहन, भूमि, शिक्षा-आधार और अन्तःकरण।',
+    'पञ्चम भाव — संतान, विद्या, बुद्धि, मन्त्र और पूर्व पुण्य।',
+    'षष्ठ भाव — शत्रु, ऋण, रोग, सेवा-कर्म और प्रतिदिन का संघर्ष।',
+    'सप्तम भाव — विवाह, साझेदारी, लोक व्यवहार और बाह्य संबंध।',
+    'अष्टम भाव — आयु, रूपान्तर, गुप्त धन, शोध और आकस्मिक घटना।',
+    'नवम भाव — धर्म, गुरु, भाग्य, तीर्थ और उच्च विद्या।',
+    'दशम भाव — कर्म, पद, यश, पिता का लोक और आजीविका।',
+    'एकादश भाव — लाभ, मित्र, मनोरथ सिद्धि और आय के द्वार।',
+    'द्वादश भाव — व्यय, मोक्ष, विदेश, शयन और अदृश्य क्षय।',
   ];
 
   static const _houseDeep = [
-    'Lagna bal vyaktitva aur swasthya pravritti tay karta hai.',
-    'Dwitiyesh kendra/trikon mein ho to vani aur sangrah sthir.',
-    'Tritiyesh bal sahas aur kaushal deta hai.',
-    'Chaturthesh sukh-sampatti aur matri-sukh se juda hai.',
-    'Panchamesh aur Guru santan-buddhi ke saath padhe jaate hain.',
-    'Shashthesh rog-shatru ko jeetne ya ulajhne dono ka sanket.',
-    'Saptamesh va Shukra dampatya swabhav.',
-    'Ashtamesh aayu aur shodh ka dwaar.',
-    'Navamesh bhagya ka stambh.',
-    'Dashamesh karma ka mukut.',
-    'Ekadashes labh ka dwaar.',
-    'Dwadashes vyaya va vairagya.',
+    'लग्न बल और लग्नेश की दशा व्यक्तित्व, स्वास्थ्य-प्रवृत्ति और संसार में पहला प्रभाव तय करती है।',
+    'द्वितीयेश यदि केन्द्र/त्रिकोण में हो तो वाणी और संग्रह दोनों में स्थिरता आती है।',
+    'तृतीयेश का बल साहस, कौशल और छोटे उद्यम का समय देता है।',
+    'चतुर्थेश का संबंध सुख-संपत्ति और मातृ-सुख से है; चंद्र यहाँ विशेष देखा जाता है।',
+    'पंचमेश और गुरु संतान-बुद्धि के निर्णय में साथ पढ़े जाते हैं।',
+    'षष्ठेश बल रोग-शत्रु को जीतने या उनसे उलझने दोनों का संकेत दे सकता है।',
+    'सप्तमेश व शुक्र दाम्पत्य स्वभाव बताते हैं; सप्तम में नीच ग्रह विलंब या सीख का संकेत है।',
+    'अष्टमेश आयु और शोध दोनों का द्वार है; गुप्त धन तभी पकता है जब दशा सहयोग करे।',
+    'नवमेश भाग्य का स्तम्भ है; सूर्य-गुरु यहाँ धर्म और मान बढ़ाते हैं।',
+    'दशमेश कर्म का मुकुट है; शनि-सूर्य-बुध यहाँ पेशे की दिशा बताते हैं।',
+    'एकादशेश लाभ का द्वार; मित्र और नेटवर्क यहीं से फलते हैं।',
+    'द्वादशेश व्यय व वैराग्य; विदेश और निद्रा-दोष यहीं देखे जाते हैं।',
   ];
 
   static const _planetPhal = {
-    'Surya': 'Atma, pita, prashasan, tej.',
-    'Chandra': 'Man, mata, lokpriyata.',
-    'Mangal': 'Urja, bhumi, bhrata, sahas.',
-    'Budh': 'Buddhi, vanijya, vani, lekhan.',
-    'Guru': 'Dharma, santan, guru, vistaar.',
-    'Shukra': 'Kala, vivah, sukh, lakshmi.',
-    'Shani': 'Karma, aayu, vilamb, anushasan.',
-    'Rahu': 'Videsh, technique, moh, parivartan.',
-    'Ketu': 'Vairagya, shodh, adhyatma, vicched.',
+    'सूर्य': 'आत्मा, पिता, प्रशासन, अस्थि और तेज। उच्च में सिंह/मेष के निकट आत्मविश्वास।',
+    'चंद्र': 'मन, माता, लोकप्रियता, रक्त और चंचलता। पक्ष और नक्षत्र से मन का रंग बदलता है।',
+    'मंगल': 'ऊर्जा, भूमि, भ्राता, रक्त-धातु और साहस। वक्री मंगल निर्णय में पुनरावृत्ति लाता है।',
+    'बुध': 'बुद्धि, वाणिज्य, वाणी, त्वचा और लेखन। सूर्य-संग बुधादित्य, चंद्र-संग चंचल बुद्धि।',
+    'गुरु': 'धर्म, संतान, गुरु, मेद और विस्तार। केन्द्र/त्रिकोण में गजकेसरी जैसे योग पुष्ट होते हैं।',
+    'शुक्र': 'कला, विवाह, सुख, शुक्रधातु और लक्ष्मी। नीच/वक्र पर भोग में असंतुलन।',
+    'शनि': 'कर्म, आयु, विलम्ब, वायु और अनुशासन। दृष्टि जहाँ पड़े वहाँ परिपक्वता या भार।',
+    'राहु': 'विदेश, तकनीक, मोह और अचानक परिवर्तन। छाया ग्रह — युति ग्रह का रंग उग्र करता है।',
+    'केतु': 'वैराग्य, शोध, आध्यात्म और विच्छेद। जहाँ केतु हो वहाँ विषय अधूरा या पारलौकिक लगता है।',
   };
 
   static const _nakLord = {
@@ -92,22 +91,22 @@ class ExhaustiveKundaliPdfService {
   };
 
   static const _vargaNotes = [
-    ['D1 Rashi / Lagna', 'Samagra jeevan, shareer aur drishya karma.'],
-    ['D2 Hora', 'Dhan-sanchay pravritti.'],
-    ['D3 Drekkana', 'Sahodar, sahas, kaushal.'],
-    ['D4 Chaturthamsha', 'Sampatti, vahan, bhumi.'],
-    ['D7 Saptamsha', 'Santan aur rachna.'],
-    ['D9 Navamsha', 'Dharma, dampatya, graha bal.'],
-    ['D10 Dashamsha', 'Karma, pad, lok karya.'],
-    ['D12 Dwadashamsha', 'Mata-pita, parampara.'],
-    ['D16 Shodashamsha', 'Sukh, vahan, bhog.'],
-    ['D20 Vimshamsha', 'Upasana, adhyatma.'],
-    ['D24 Chaturvimshamsha', 'Vidya, siddhata.'],
-    ['D27 Bhamsha', 'Bal aur kamzori.'],
-    ['D30 Trimshamsha', 'Arishta, rog.'],
-    ['D40 Khavedamsha', 'Matri paksha.'],
-    ['D45 Akshavedamsha', 'Pitri paksha.'],
-    ['D60 Shashtyamsha', 'Purva janma sanskar.'],
+    ['D1 राशि / लग्न', 'समग्र जीवन, शरीर और दृश्य कर्म।'],
+    ['D2 होरा', 'धन-संचय की प्रवृत्ति।'],
+    ['D3 द्रेष्काण', 'सहोदर, साहस, कौशल।'],
+    ['D4 चतुर्थांश', 'संपत्ति, वाहन, भूमि।'],
+    ['D7 सप्तमांश', 'संतान और रचना।'],
+    ['D9 नवमांश', 'धर्म, दाम्पत्य, ग्रह बल।'],
+    ['D10 दशमांश', 'कर्म, पद, लोक कार्य।'],
+    ['D12 द्वादशांश', 'माता-पिता, परंपरा।'],
+    ['D16 षोडशांश', 'सुख, वाहन, भोग।'],
+    ['D20 विंशांश', 'उपासना, आध्यात्म।'],
+    ['D24 चतुर्विंशांश', 'विद्या, सिद्धता।'],
+    ['D27 भांशा', 'बल और कमजोरी।'],
+    ['D30 त्रिंशांश', 'अरिष्ट, रोग।'],
+    ['D40 खवेदांश', 'मातृ पक्ष।'],
+    ['D45 अक्षवेदांश', 'पितृ पक्ष।'],
+    ['D60 षष्ट्यांश', 'पूर्व जन्म संस्कार।'],
   ];
 
   static pw.Font? _regular;
@@ -189,11 +188,11 @@ class ExhaustiveKundaliPdfService {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
-                        'Shakti Panchang • Sampurna Kundali Patrika',
+                        'शक्ति पंचांग • सम्पूर्ण कुंडली पत्रिका',
                         style: pw.TextStyle(font: fonts.bold, fontSize: 8, color: _gold),
                       ),
                       pw.Text(
-                        'Page $pageNo',
+                        'पृष्ठ $pageNo',
                         style: pw.TextStyle(font: fonts.regular, fontSize: 8, color: _gold),
                       ),
                     ],
@@ -221,96 +220,98 @@ class ExhaustiveKundaliPdfService {
       );
     }
 
-    page('Janma Patrika Aavaran', [
+    page('॥ श्री गणेशाय नमः ॥  जन्म पत्रिका आवरण', [
       pw.Text(d.name, style: pw.TextStyle(font: fonts.bold, fontSize: 22)),
       pw.SizedBox(height: 8),
-      pw.Text('Janma: ${_fmt(d.birthDate)}  samay ${d.birthTime}'),
-      pw.Text('Sthan: ${d.birthPlace}'),
-      pw.Text('Lat ${d.latitude.toStringAsFixed(4)}  Lon ${d.longitude.toStringAsFixed(4)}  TZ ${d.timezoneHours}'),
+      pw.Text('जन्म: ${_fmt(d.birthDate)}  समय ${d.birthTime}'),
+      pw.Text('स्थान: ${d.birthPlace}'),
+      pw.Text('अक्षांश ${d.latitude.toStringAsFixed(4)}  रेखांश ${d.longitude.toStringAsFixed(4)}  TZ ${d.timezoneHours}'),
       pw.SizedBox(height: 10),
-      pw.Text('Lagna ${d.lagnaRashi} (${d.lagnaDegree.toStringAsFixed(2)}) • Chandra ${d.moonRashi} • Surya ${d.sunRashi}'),
-      pw.Text('Nakshatra ${d.nakshatra}  charan ${d.charan}  nakshatresh ${_nakLordOf(d.nakshatra)}'),
-      pw.Text('Nadi ${d.nadi} • Gana ${d.gana} • Yoni ${d.yoni} • Varna ${d.varna}'),
-      pw.Text('Vimshottari: mahadasha ${d.mahadasha} / antardasha ${d.antardasha}'),
+      pw.Text('लग्न ${d.lagnaRashi} (${d.lagnaDegree.toStringAsFixed(2)}°) • चंद्र ${d.moonRashi} • सूर्य ${d.sunRashi}'),
+      pw.Text('नक्षत्र ${d.nakshatra}  चरण ${d.charan}  नक्षत्रेश ${_nakLordOf(d.nakshatra)}'),
+      pw.Text('नाड़ी ${d.nadi} • गण ${d.gana} • योनि ${d.yoni} • वर्ण ${d.varna}'),
+      pw.Text('विंशोत्तरी: महादशा ${d.mahadasha} / अंतर्दशा ${d.antardasha}'),
       pw.SizedBox(height: 16),
       if (brand.isConfigured) ...[
-        pw.Text('Jyotish paramarsh', style: pw.TextStyle(font: fonts.bold, fontSize: 13)),
+        pw.Text('ज्योतिष परामर्श', style: pw.TextStyle(font: fonts.bold, fontSize: 13)),
         pw.Text(brand.displayLine),
         if (brand.sansthan.isNotEmpty) pw.Text(brand.sansthan),
         if (brand.city.isNotEmpty) pw.Text(brand.city),
-        if (brand.phone.isNotEmpty) pw.Text('Phone: ${brand.phone}'),
+        if (brand.phone.isNotEmpty) pw.Text('दूरभाष: ${brand.phone}'),
         if (brand.email.isNotEmpty) pw.Text(brand.email),
         if (brand.specialization.isNotEmpty) pw.Text(brand.specialization),
       ] else
-        pw.Text('Jyotishi branding set nahi hai — settings se naam jodein.'),
+        pw.Text('ज्योतिषी ब्रांडिंग सेट नहीं है — सेटिंग से नाम जोड़ें, आवरण पर छपेगा।'),
     ]);
 
-    page('Pathan vidhi', [
-      pw.Text('Yeh patrika webapp exhaustive mahapatrika ki bhavna se on-device bani hai.'),
+    page('जातक परिचय व पठन विधि', [
+      pw.Text('यह पत्रिका वेब ऐप की सम्पूर्ण महापत्रिका की भावना से ऑन-डिवाइस बनी है। ग्रह, भाव, योग-दोष, विंशोत्तरी, अष्टकवर्ग, षड्बल और वर्ग एक साथ पढ़ें।'),
       pw.SizedBox(height: 8),
-      pw.Bullet(text: 'Pehle lagna, chandra aur vartaman dasha sthir karein.'),
-      pw.Bullet(text: 'Phir bhava-swami, yuti aur drishti dekhein.'),
-      pw.Bullet(text: 'Navamsha (D9) se graha bal ki pariksha karein.'),
-      pw.Bullet(text: 'Gochar aur dasha bina samay na bandhein.'),
-      pw.Bullet(text: 'Upay daan-seva-jap star ke hon; ratna visheshagya se.'),
+      pw.Bullet(text: 'पहले लग्न, चंद्र और वर्तमान दशा स्थिर करें।'),
+      pw.Bullet(text: 'फिर भाव-स्वामी, युति और दृष्टि देखें।'),
+      pw.Bullet(text: 'नवमांश (D9) से ग्रह बल की परीक्षा करें।'),
+      pw.Bullet(text: 'गोचर और दशा बिना समय न बाँधें।'),
+      pw.Bullet(text: 'उपाय दान-सेवा-जप स्तर के हों; रत्न विशेषज्ञ से ही।'),
     ]);
 
-    page('Graha sthiti', [
+    page('ग्रह स्थिति सारणी', [
       ...d.planets.map(
         (p) => pw.Padding(
           padding: const pw.EdgeInsets.only(bottom: 5),
           child: pw.Text(
-            '${p.planet}: ${p.rashi} ${p.degree.toStringAsFixed(2)} • bhava ${p.house}'
-            '${p.isRetrograde ? ' • vakri' : ''} • gati ${p.speed.toStringAsFixed(3)}/din',
+            '${p.planet}: ${p.rashi} ${p.degree.toStringAsFixed(2)}° • भाव ${p.house}'
+            '${p.isRetrograde ? ' • वक्री' : ''} • गति ${p.speed.toStringAsFixed(3)}°/दिन',
           ),
         ),
       ),
     ]);
 
     for (final h in houses) {
-      final planets = h.planets.isEmpty ? 'rikt bhava' : h.planets.join(', ');
-      page('Bhava ${h.house} — ${h.sign} (swami ${h.lord})', [
+      final planets = h.planets.isEmpty ? 'रिक्त भाव' : h.planets.join(', ');
+      page('भाव ${h.house} — ${h.sign} (स्वामी ${h.lord})', [
         pw.Text(_housePhal[(h.house - 1).clamp(0, 11)]),
         pw.SizedBox(height: 8),
         pw.Text(_houseDeep[(h.house - 1).clamp(0, 11)]),
         pw.SizedBox(height: 8),
-        pw.Text('Is bhava mein graha: $planets'),
+        pw.Text('इस भाव में ग्रह: $planets'),
+        pw.SizedBox(height: 8),
+        pw.Text('भाव फल जातक के कर्म, दशा और गोचर से पकता है। केवल भाव-स्वामी या एक दृष्टि से निश्चय न करें।'),
       ]);
     }
 
     for (final p in d.planets) {
-      page('Graha path — ${p.planet}', [
-        pw.Text(_planetPhal[p.planet] ?? 'Graha phal dasha aur bhava se dekha jata hai.'),
+      page('ग्रह पाठ — ${p.planet}', [
+        pw.Text(_planetPhal[p.planet] ?? 'ग्रह फल दशा और भाव से देखा जाता है।'),
         pw.SizedBox(height: 8),
-        pw.Text('Rashi ${p.rashi}, bhava ${p.house}, amsha ${p.degree.toStringAsFixed(2)}'),
-        pw.Text(p.isRetrograde ? 'Vakri gati.' : 'Margi gati.'),
+        pw.Text('राशि ${p.rashi}, भाव ${p.house}, अंश ${p.degree.toStringAsFixed(2)}°'),
+        pw.Text(p.isRetrograde ? 'वक्री गति — विषय में पुनर्विचार और पुनरावृत्ति।' : 'मार्गी गति।'),
       ]);
     }
 
-    page('Yoga vichar', [
+    page('योग विचार', [
       ...yogas.map((y) => pw.Bullet(text: y)),
       pw.SizedBox(height: 10),
-      pw.Text('Yoga sanket hain, phal dasha aane par khilte hain.'),
+      pw.Text('योग संकेत हैं, फल दशा आने पर ही पूर्ण खिलते हैं।'),
     ]);
 
-    page('Dosha vichar', [
+    page('दोष विचार', [
       ...doshas.map((y) => pw.Bullet(text: y)),
       pw.SizedBox(height: 10),
-      pw.Text('Dosha milan, dasha aur nishedh-bhang ke bina antim na maanein.'),
+      pw.Text('दोष मिलान, दशा और निषेध-भंग के बिना अंतिम न मानें।'),
     ]);
 
-    page('Vimshottari mahadasha', [
-      pw.Text('Vartaman: ${d.mahadasha} / ${d.antardasha}'),
+    page('विंशोत्तरी महादशा क्रम', [
+      pw.Text('वर्तमान: ${d.mahadasha} / ${d.antardasha}'),
       pw.SizedBox(height: 8),
       ...d.dashaPeriods.take(9).map(
-            (p) => pw.Text('${p.planet}: ${_fmt(p.startDate)} -> ${_fmt(p.endDate)} (${p.years.toStringAsFixed(2)} varsh)'),
+            (p) => pw.Text('${p.planet}: ${_fmt(p.startDate)} → ${_fmt(p.endDate)} (${p.years.toStringAsFixed(2)} वर्ष)'),
           ),
     ]);
 
     for (final p in d.dashaPeriods.take(9)) {
-      page('Mahadasha — ${p.planet}', [
-        pw.Text('${_fmt(p.startDate)} se ${_fmt(p.endDate)}'),
-        pw.Text('Avadhi lagbhag ${p.years.toStringAsFixed(2)} varsh.'),
+      page('महादशा — ${p.planet}', [
+        pw.Text('${_fmt(p.startDate)} से ${_fmt(p.endDate)}'),
+        pw.Text('अवधि लगभग ${p.years.toStringAsFixed(2)} वर्ष।'),
         pw.SizedBox(height: 8),
         pw.Text(_planetPhal[p.planet] ?? ''),
       ]);
@@ -322,88 +323,88 @@ class ExhaustiveKundaliPdfService {
         byMaha.putIfAbsent(a.maha, () => []).add(a);
       }
       for (final e in byMaha.entries.take(9)) {
-        page('Antardasha — mahadasha ${e.key}', [
+        page('अंतर्दशा — महादशा ${e.key}', [
           ...e.value.take(18).map(
-                (a) => pw.Text('${a.antar}: ${_fmt(a.startDate)} -> ${_fmt(a.endDate)} (${a.years.toStringAsFixed(2)} varsh)'),
+                (a) => pw.Text('${a.antar}: ${_fmt(a.startDate)} → ${_fmt(a.endDate)} (${a.years.toStringAsFixed(2)} वर्ष)'),
               ),
         ]);
       }
     }
 
     if (d.pratyantarPeriods.isNotEmpty) {
-      page('Pratyantar dasha', [
+      page('प्रत्यंतर दशा', [
         ...d.pratyantarPeriods.take(24).map(
-              (p) => pw.Text('${p.maha}/${p.antar}/${p.pratyantar}: ${_fmt(p.startDate)} -> ${_fmt(p.endDate)}'),
+              (p) => pw.Text('${p.maha}/${p.antar}/${p.pratyantar}: ${_fmt(p.startDate)} → ${_fmt(p.endDate)}'),
             ),
       ]);
     }
 
-    page('Ashtakavarga (sarvashtak)', [
-      pw.Text('Rashi kram Mesha se Meena. 28+ generally balwan kshetra.'),
+    page('अष्टकवर्ग (सर्वाष्टक)', [
+      pw.Text('राशि क्रम मेष से मीन। 28+ सामान्यतः बलवान क्षेत्र।'),
       pw.SizedBox(height: 8),
-      pw.Text('Sarvashtak: ${av.sarva.join('  ')}'),
+      pw.Text('सर्वाष्टक: ${av.sarva.join('  ')}'),
       pw.SizedBox(height: 10),
       ...av.bhinna.entries.map((e) => pw.Text('${e.key}: ${e.value.join('  ')}')),
     ]);
 
-    page('Bhava bal', [
+    page('भाव बल', [
       ...bhava.map(
-        (h) => pw.Text('Bhava ${h['house']} ${h['sign']} • swami ${h['lord']} • SAV ${h['ashtakavarga']} • ank ${h['score']}'),
+        (h) => pw.Text('भाव ${h['house']} ${h['sign']} • स्वामी ${h['lord']} • SAV ${h['ashtakavarga']} • अंक ${h['score']}'),
       ),
     ]);
 
-    page('Shadbala saar', [
+    page('षड्बल सार', [
       ...shadbala.map(
         (s) => pw.Text(
-          '${s['planet']}: kul ${(s['total'] as num).toStringAsFixed(1)} • '
-          'sthana ${(s['sthana'] as num).toStringAsFixed(0)} '
-          'dik ${(s['dig'] as num).toStringAsFixed(0)} '
-          'kaal ${(s['kala'] as num).toStringAsFixed(0)} '
-          'cheshta ${(s['chesta'] as num).toStringAsFixed(0)}',
+          '${s['planet']}: कुल ${(s['total'] as num).toStringAsFixed(1)} • '
+          'स्थान ${(s['sthana'] as num).toStringAsFixed(0)} '
+          'दिक् ${(s['dig'] as num).toStringAsFixed(0)} '
+          'काल ${(s['kala'] as num).toStringAsFixed(0)} '
+          'चेष्टा ${(s['chesta'] as num).toStringAsFixed(0)}',
         ),
       ),
     ]);
 
-    page('Grahavastha', [
+    page('ग्रहावस्था', [
       ...avastha.map((a) => pw.Text('${a['planet']}: ${a['baladi']} • ${a['jagrad']} • ${a['deeptadi']} • ${a['status']}')),
     ]);
 
     for (final v in _vargaNotes) {
-      page('Varga — ${v[0]}', [
+      page('वर्ग — ${v[0]}', [
         pw.Text(v[1]),
         pw.SizedBox(height: 8),
-        pw.Text('Jatak: ${d.name} • lagna ${d.lagnaRashi} • chandra ${d.moonRashi}.'),
+        pw.Text('जातक: ${d.name} • लग्न ${d.lagnaRashi} • चंद्र ${d.moonRashi}।'),
       ]);
     }
 
-    page('Jeevan — vivah', [...marriage.map((t) => pw.Bullet(text: t))]);
-    page('Jeevan — career', [...career.map((t) => pw.Bullet(text: t))]);
-    page('Jeevan — dhan', [...wealth.map((t) => pw.Bullet(text: t))]);
+    page('जीवन क्षेत्र — विवाह', [...marriage.map((t) => pw.Bullet(text: t))]);
+    page('जीवन क्षेत्र — करियर', [...career.map((t) => pw.Bullet(text: t))]);
+    page('जीवन क्षेत्र — धन', [...wealth.map((t) => pw.Bullet(text: t))]);
 
-    page('Dasha upay — ${remedies.focusPlanet}', [
-      pw.Text('Kendra graha: ${remedies.focusPlanet}'),
+    page('दशा उपाय — ${remedies.focusPlanet}', [
+      pw.Text('केन्द्र ग्रह: ${remedies.focusPlanet}'),
       pw.SizedBox(height: 8),
-      pw.Text('Karein', style: pw.TextStyle(font: fonts.bold)),
+      pw.Text('करें', style: pw.TextStyle(font: fonts.bold)),
       ...remedies.remedies.map((t) => pw.Bullet(text: t)),
       pw.SizedBox(height: 8),
-      pw.Text('Bachein', style: pw.TextStyle(font: fonts.bold)),
+      pw.Text('बचें', style: pw.TextStyle(font: fonts.bold)),
       ...remedies.avoid.map((t) => pw.Bullet(text: t)),
     ]);
 
-    page('Satvik upay', [
-      pw.Bullet(text: 'Nitya ishtadev / kuldevata smaran.'),
-      pw.Bullet(text: 'Pratah surya arghya aur sandhya deep.'),
-      pw.Bullet(text: 'Vartaman dasha swami ke vaar par daan-jap.'),
-      pw.Bullet(text: 'Mata-pita ashirvad aur annadaan.'),
-      pw.Bullet(text: 'Go-seva, vidyadaan aur satya vachan.'),
+    page('सात्विक उपाय', [
+      pw.Bullet(text: 'नित्य इष्टदेव / कुलदेवता स्मरण।'),
+      pw.Bullet(text: 'प्रातः सूर्य अर्घ्य और संध्या दीप।'),
+      pw.Bullet(text: 'वर्तमान दशा स्वामी के वार पर दान-जप।'),
+      pw.Bullet(text: 'माता-पिता का आशीर्वाद और अन्नदान।'),
+      pw.Bullet(text: 'गो-सेवा, विद्यादान और सत्य वचन।'),
     ]);
 
-    page('Seema evam ghoshana', [
-      pw.Text('Yeh patrika ganana aur shastriya sanket hai, bhaya ya niyati nahi. Chikitsa, vidhik ya vittiya nirnay visheshagya se lein.'),
+    page('सीमाएँ एवं घोषणा', [
+      pw.Text('यह पत्रिका गणना और शास्त्रीय संकेत है, भय या नियति नहीं। चिकित्सा, विधिक या वित्तीय निर्णय विशेषज्ञ से लें।'),
       pw.SizedBox(height: 12),
-      pw.Text('Jatak: ${d.name}'),
-      pw.Text('Janma: ${_fmt(d.birthDate)} ${d.birthTime}, ${d.birthPlace}'),
-      if (brand.isConfigured) pw.Text('Paramarsh: ${brand.displayLine}'),
+      pw.Text('जातक: ${d.name}'),
+      pw.Text('जन्म: ${_fmt(d.birthDate)} ${d.birthTime}, ${d.birthPlace}'),
+      if (brand.isConfigured) pw.Text('परामर्श: ${brand.displayLine}'),
     ]);
 
     final bytes = await doc.save();
