@@ -3,6 +3,14 @@ import 'festivals_screen.dart';
 import 'locations_screen.dart';
 import 'reminder_screen.dart';
 import 'kundali_screen.dart';
+import 'uma_screen.dart';
+import 'vrat_katha_screen.dart';
+import 'kalnirnay_screen.dart';
+import 'sade_sati_screen.dart';
+import 'daily_shloka_screen.dart';
+import 'hora_chakra_screen.dart';
+import 'gochar_screen.dart';
+import 'annual_muhurat_screen.dart';
 
 class ToolsScreen extends StatelessWidget {
   final DateTime date;
@@ -24,6 +32,30 @@ class ToolsScreen extends StatelessWidget {
         _tile(context, Icons.notifications_active, 'उमा Reminder',
           'शुभ समय या यात्रा का समय याद रखें',
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReminderScreen()))),
+        _tile(context, Icons.auto_awesome, 'उमा विद्वान् ज्योतिषी',
+          'कुंडली, मुहूर्त, साढ़े साती, उपाय',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => UmaScreen(date: date)))),
+        _tile(context, Icons.menu_book, 'व्रत कथा व आरती',
+          'सत्यनारायण, एकादशी, प्रदोष, चालीसा',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VratKathaScreen()))),
+        _tile(context, Icons.grid_view, 'कालनिर्णय पंचांग',
+          'मासिक तिथि-ग्रिड व व्रत बिल्ले',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const KalnirnayScreen()))),
+        _tile(context, Icons.nights_stay, 'साढ़े साती',
+          'शनि चरण, ढैया और वैदिक उपाय',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SadeSatiScreen()))),
+        _tile(context, Icons.format_quote, 'आज का श्लोक',
+          'गीता, नीति और स्तोत्र संग्रह',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DailyShlokaScreen()))),
+        _tile(context, Icons.watch_later_outlined, 'होरा चक्र',
+          '24 होरा और वर्तमान ग्रह काल',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HoraChakraScreen()))),
+        _tile(context, Icons.public, 'दैनिक गोचर',
+          'ग्रह गोचर चंद्र भाव से',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GocharScreen()))),
+        _tile(context, Icons.table_chart_outlined, 'मुहूर्त सारणी',
+          'ब्रह्म, अभिजित, विजय, प्रदोष',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnualMuhuratScreen()))),
       ],
     ),
   );
