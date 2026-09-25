@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/app_settings.dart';
+import 'astrologer_branding_screen.dart';
 
 class AppSettingsScreen extends StatefulWidget {
   const AppSettingsScreen({super.key});
@@ -84,6 +85,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          ListTile(
+            leading: const Icon(Icons.badge_outlined),
+            title: const Text('ज्योतिषी ब्रांडिंग'),
+            subtitle: const Text('कुंडली PDF के आवरण पर नाम और संस्थान'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AstrologerBrandingScreen()),
+            ),
+          ),
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('Shakti Panchang'),

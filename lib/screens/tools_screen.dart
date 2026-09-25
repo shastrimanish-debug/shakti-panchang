@@ -14,6 +14,7 @@ import 'annual_muhurat_screen.dart';
 import 'digital_compass_screen.dart';
 import 'moon_phase_screen.dart';
 import 'astrologer_branding_screen.dart';
+import 'varga_analysis_screen.dart';
 
 class ToolsScreen extends StatelessWidget {
   final DateTime date;
@@ -65,6 +66,9 @@ class ToolsScreen extends StatelessWidget {
         _tile(context, Icons.nightlight_round, 'चन्द्र कला',
           'तिथि, पक्ष और प्रकाश प्रतिशत',
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoonPhaseScreen()))),
+        _tile(context, Icons.hub_outlined, 'वर्ग विश्लेषण',
+          'D1–D60 उद्देश्य, विवाह-करियर-धन',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VargaAnalysisScreen()))),
         _tile(context, Icons.badge_outlined, 'ज्योतिषी ब्रांडिंग',
           'PDF आवरण पर नाम, नगर, संस्थान',
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AstrologerBrandingScreen()))),
