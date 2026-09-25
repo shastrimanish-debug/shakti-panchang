@@ -12,7 +12,10 @@ import '../services/whatsapp_panchang_share_service.dart';
 import '../services/bhojpatra_pdf_service.dart';
 import '../services/disha_service.dart';
 import '../widgets/flutter_panchang_cards.dart';
+import '../widgets/moon_phase_chart.dart';
 import 'uma_screen.dart';
+import 'digital_compass_screen.dart';
+import 'moon_phase_screen.dart';
 
 class PanchangDetailScreen extends StatefulWidget {
   final DateTime date;
@@ -229,7 +232,7 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _tabChip(0, '🪔 मुख्य'),
+                _tabChip(0, '🛒 मुख्य'),
                 _tabChip(1, '♄ गोचर'),
                 _tabChip(2, '⏳ होरा (२४ h)'),
                 _tabChip(3, '✨ मुहूर्त'),
@@ -250,6 +253,26 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
             const SizedBox(height: 10),
             SpecialYogaBanner(yogas: specialYogas),
             PanchakBhadraRow(panchak: panchak, bhadra: bhadra),
+            const SizedBox(height: 10),
+            MoonPhaseChart(
+              solarLongitude: _data.solarLongitude,
+              lunarLongitude: _data.lunarLongitude,
+              tithi: _data.tithi,
+              paksha: _data.paksha,
+              nakshatra: _data.nakshatra,
+              lunarRashi: _data.lunarRashiName,
+              tithiProgress: _data.tithiProgress,
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MoonPhaseScreen()),
+                ),
+                child: const Text('चन्द्र कला बड़ा देखें'),
+              ),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -349,6 +372,17 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
                 title: const Text('आज का दिशाशूल', style: TextStyle(fontWeight: FontWeight.w900)),
                 subtitle: Text('$shool दिशा में नई यात्रा शुरू न करें।\n${DishaService.advice(shool, _date)}'),
               ),
+            ),
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DigitalCompassScreen(shoolDirection: shool),
+                ),
+              ),
+              icon: const Icon(Icons.explore_rounded),
+              label: const Text('वैदिक दिशा-सूचक खोलें'),
             ),
           ],
         ],
