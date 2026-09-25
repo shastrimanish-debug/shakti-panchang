@@ -11,7 +11,7 @@ import 'shubh_samay_screen.dart';
 import 'numerology_screen.dart';
 import 'daily_rashifal_screen.dart';
 import 'vrat_katha_screen.dart';
-import 'kalnirnay_screen.dart';
+import 'sanatan_masik_panchang_screen.dart';
 import 'sade_sati_screen.dart';
 import 'daily_shloka_screen.dart';
 import 'hora_chakra_screen.dart';
@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           _homeNavCard(context, title: 'व्रत कथा एवं आरती', subtitle: 'सत्यनारायण, एकादशी, प्रदोष, करवा चौथ, चालीसा', icon: Icons.menu_book_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VratKathaScreen()))),
           const SizedBox(height: 16),
-          _homeNavCard(context, title: 'कालनिर्णय मासिक पंचांग', subtitle: 'तिथि ग्रिड, एकादशी-प्रदोष बिल्ले, विक्रम संवत्', icon: Icons.calendar_view_month_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const KalnirnayScreen()))),
+          _homeNavCard(context, title: 'सनातन मासिक पंचांग', subtitle: 'तिथि ग्रिड, एकादशी-प्रदोष बिल्ले, विक्रम संवत', icon: Icons.calendar_view_month_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SanatanMasikPanchangScreen()))),
           const SizedBox(height: 16),
           _homeNavCard(context, title: 'शनि साढ़े साती', subtitle: 'चरण, ढैया, गोचर फल और वैदिक उपाय', icon: Icons.nights_stay_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SadeSatiScreen()))),
           const SizedBox(height: 16),
