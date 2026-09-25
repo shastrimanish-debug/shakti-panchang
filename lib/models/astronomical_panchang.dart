@@ -44,4 +44,32 @@ class AstronomicalPanchang {
     required this.engine,
     required this.precisionNote,
   });
+
+  static const _rashis = [
+    'मेष', 'वृषभ', 'मिथुन', 'कर्क', 'सिंह', 'कन्या',
+    'तुला', 'वृश्चिक', 'धनु', 'मकर', 'कुंभ', 'मीन',
+  ];
+
+  static const _sauraMasa = [
+    'वैशाख', 'ज्येष्ठ', 'आषाढ़', 'श्रावण', 'भाद्रपद', 'आश्विन',
+    'कार्तिक', 'मार्गशीर्ष', 'पौष', 'माघ', 'फाल्गुन', 'चैत्र',
+  ];
+
+  String get lunarRashiName {
+    final i = ((lunarLongitude % 360) / 30).floor() % 12;
+    return _rashis[i];
+  }
+
+  int get nakshatraPada {
+    const span = 360.0 / 27.0;
+    final inNak = (lunarLongitude % 360) % span;
+    return (inNak / (span / 4)).floor() + 1;
+  }
+
+  String get masa {
+    final i = ((solarLongitude % 360) / 30).floor() % 12;
+    return _sauraMasa[i];
+  }
+
+  String get samvat => 'विक्रम संवत्';
 }
