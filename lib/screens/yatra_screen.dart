@@ -6,6 +6,7 @@ import '../services/yatra_advisor_service.dart';
 import '../services/geocoding_service.dart';
 import '../services/uma_ai_service.dart';
 import '../services/solar_service.dart';
+import 'digital_compass_screen.dart';
 
 class YatraScreen extends StatefulWidget {
   final double fromLat;
@@ -80,7 +81,7 @@ class _YatraScreenState extends State<YatraScreen> {
     final lon = double.tryParse(toLon.text.trim());
     if (lat == null || lon == null || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Destination latitude/longitude सही भरें।')),
+        const SnackBar(content: Text('Destination latitude/longitude sahi bharein.')),
       );
       return;
     }
@@ -120,10 +121,10 @@ class _YatraScreenState extends State<YatraScreen> {
     final r = result;
     final a = advice;
     if (r == null || a == null) return;
-    final dest = toName.text.isEmpty ? 'तुम्हारे शहर' : toName.text;
+    final dest = toName.text.isEmpty ? 'tumhare shahar' : toName.text;
     await uma.speak(
-      'सुनो। ${widget.fromName} से $dest ${r.direction} दिशा में है। '
-      'आज दिशाशूल ${DishaService.avoided(selectedDate)} में है। ${a.summary}',
+      'Suno. ${widget.fromName} se $dest ${r.direction} disha mein hai. '
+      'Aaj dishashool ${DishaService.avoided(selectedDate)} mein hai. ${a.summary}',
     );
   }
 
@@ -135,14 +136,14 @@ class _YatraScreenState extends State<YatraScreen> {
     final r = result;
     final a = advice;
     return Scaffold(
-      appBar: AppBar(title: const Text('🚗 यात्रा मुहूर्त')),
+      appBar: AppBar(title: const Text('Yatra muhurat')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_month),
-              title: const Text('यात्रा की तारीख'),
+              title: const Text('Yatra ki tarikh'),
               subtitle: Text('${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
               trailing: const Icon(Icons.edit_calendar),
               onTap: pickDate,
@@ -153,7 +154,7 @@ class _YatraScreenState extends State<YatraScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'From: ${widget.fromName}\nउस दिन का दिशाशूल: ${DishaService.avoided(selectedDate)}',
+                'From: ${widget.fromName}\nUs din ka dishashool: ${DishaService.avoided(selectedDate)}',
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -162,8 +163,8 @@ class _YatraScreenState extends State<YatraScreen> {
           TextField(
             controller: toName,
             decoration: InputDecoration(
-              labelText: 'गंतव्य शहर / गाँव',
-              hintText: 'जैसे Mumbai, Ujjain, Vadodara',
+              labelText: 'Gantavya shahar / gaon',
+              hintText: 'jaise Mumbai, Ujjain, Vadodara',
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search),
@@ -203,7 +204,25 @@ class _YatraScreenState extends State<YatraScreen> {
           FilledButton.icon(
             onPressed: calculate,
             icon: const Icon(Icons.navigation_rounded),
-            label: const Text('दिशा + शुभ यात्रा समय निकालें'),
+            label: const Text('Disha + shubh yatra samay'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DigitalCompassScreen(
+                    shoolDirection: DishaService.avoided(selectedDate),
+                    targetBearing: result?.bearing,
+                    targetName: toName.text.trim().isEmpty ? null : toName.text.trim(),
+                    blocked: result?.directionShool ?? false,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.explore_rounded),
+            label: const Text('Vaidik disha-soochak kholen'),
           ),
           if (r != null && a != null) ...[
             const SizedBox(height: 16),
@@ -213,20 +232,20 @@ class _YatraScreenState extends State<YatraScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('🧭 ${r.direction}',
+                    Text(' ${r.direction}',
                         style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
                     const SizedBox(height: 8),
-                    Text('Bearing: ${r.bearing.toStringAsFixed(1)}°'),
+                    Text('Bearing: ${r.bearing.toStringAsFixed(1)}'),
                     const SizedBox(height: 10),
                     Text(
-                      r.directionShool ? '🔴 दिशाशूल से प्रभावित' : '🟢 दिशाशूल से सीधे वर्जित नहीं',
+                      r.directionShool ? 'Dishashool se prabhavit' : 'Dishashool se seedhe varjit nahi',
                       style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
                     const SizedBox(height: 8),
                     Text(a.summary),
                     if (a.blockedTimes.isNotEmpty) ...[
                       const SizedBox(height: 14),
-                      const Text('🚫 राहु काल / यमगण्ड / गुलिक',
+                      const Text('Rahu / Yamaganda / Gulika',
                           style: TextStyle(fontWeight: FontWeight.w900)),
                       const SizedBox(height: 4),
                       ...a.blockedTimes.map((p) => ListTile(
@@ -237,7 +256,7 @@ class _YatraScreenState extends State<YatraScreen> {
                       )),
                     ],
                     const SizedBox(height: 14),
-                    const Text('⏰ अपेक्षाकृत बेहतर यात्रा विंडो',
+                    const Text('Behtar yatra window',
                         style: TextStyle(fontWeight: FontWeight.w900)),
                     const SizedBox(height: 6),
                     ...a.suitable.take(6).map((p) => ListTile(
@@ -254,7 +273,7 @@ class _YatraScreenState extends State<YatraScreen> {
                     OutlinedButton.icon(
                       onPressed: speak,
                       icon: const Icon(Icons.volume_up_rounded),
-                      label: const Text('उमा से सुनें'),
+                      label: const Text('Uma se sunen'),
                     ),
                   ],
                 ),
