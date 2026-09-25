@@ -16,7 +16,7 @@ import 'daily_rashifal_screen.dart';
 import 'numerology_screen.dart';
 import 'saved_profiles_screen.dart';
 import 'vrat_katha_screen.dart';
-import 'kalnirnay_screen.dart';
+import 'sanatan_masik_panchang_screen.dart';
 import 'sade_sati_screen.dart';
 import 'daily_shloka_screen.dart';
 import 'hora_chakra_screen.dart';
@@ -40,9 +40,6 @@ const _paper = Color(0xFFFFF9EE);
 const _brown = Color(0xFF5C3A21);
 const _gold = Color(0xFFB56A00);
 
-/// Book-style launcher. The individual modules remain normal screens so
-/// existing navigation/state is preserved; only the top-level index uses a
-/// real page-turn interaction.
 class BookHomeScreen extends StatefulWidget {
   const BookHomeScreen({super.key});
 
@@ -128,8 +125,8 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       KeyedSubtree(key: const ValueKey('vratkatha'), child: _sectionPage(context, 'व्रत कथा व आरती', 'एकादशी, प्रदोष, सत्यनारायण कथा व आरती', Icons.menu_book_rounded, () async {
         await _openRoute(const VratKathaScreen());
       })),
-      KeyedSubtree(key: const ValueKey('kalnirnay'), child: _sectionPage(context, 'कालनिर्णय', 'मासिक पंचांग ग्रिड • व्रत बिल्ले • विक्रम संवत्', Icons.grid_view_rounded, () async {
-        await _openRoute(const KalnirnayScreen());
+      KeyedSubtree(key: const ValueKey('masik_panchang'), child: _sectionPage(context, 'सनातन मासिक पंचांग', 'मासिक पंचांग ग्रिड • व्रत बिल्ले • विक्रम संवत', Icons.grid_view_rounded, () async {
+        await _openRoute(const SanatanMasikPanchangScreen());
       })),
       KeyedSubtree(key: const ValueKey('sadesati'), child: _sectionPage(context, 'साढ़े साती', 'शनि चरण • ढैया • गोचर • उपाय', Icons.nights_stay_rounded, () async {
         await _openRoute(const SadeSatiScreen());
@@ -168,21 +165,9 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
         centerTitle: true,
         title: Text('शक्ति पंचांग • ${_place}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
         actions: [
-          IconButton(
-            tooltip: 'स्थान',
-            icon: const Icon(Icons.place_outlined),
-            onPressed: _pickLocation,
-          ),
-          IconButton(
-            tooltip: 'सदस्यता',
-            icon: const Icon(Icons.workspace_premium_outlined),
-            onPressed: () => _openRoute(const PremiumScreen(), skipAd: true),
-          ),
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => _openRoute(const AppSettingsScreen(), skipAd: true),
-          ),
+          IconButton(tooltip: 'स्थान', icon: const Icon(Icons.place_outlined), onPressed: _pickLocation),
+          IconButton(tooltip: 'सदस्यता', icon: const Icon(Icons.workspace_premium_outlined), onPressed: () => _openRoute(const PremiumScreen(), skipAd: true)),
+          IconButton(tooltip: 'Settings', icon: const Icon(Icons.settings_outlined), onPressed: () => _openRoute(const AppSettingsScreen(), skipAd: true)),
         ],
       ),
       body: SafeArea(
@@ -324,101 +309,51 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
 
   Future<void> _openCurrentChapter() async {
     switch (_page) {
-      case 1:
-        await _openPanchang();
-        return;
-      case 2:
-        await _openRoute(const KundaliScreen());
-        return;
-      case 3:
-        await _openRoute(const DailyRashifalScreen());
-        return;
-      case 4:
-        await _openRoute(const NumerologyScreen());
-        return;
+      case 1: await _openPanchang(); return;
+      case 2: await _openRoute(const KundaliScreen()); return;
+      case 3: await _openRoute(const DailyRashifalScreen()); return;
+      case 4: await _openRoute(const NumerologyScreen()); return;
       case 5:
         final now = DateTime.now();
         final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
         await _openRoute(MuhuratScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise)));
         return;
-      case 6:
-        await _openRoute(YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place));
-        return;
-      case 7:
-        await _openRoute(FestivalsScreen(date: DateTime.now()));
-        return;
+      case 6: await _openRoute(YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place)); return;
+      case 7: await _openRoute(FestivalsScreen(date: DateTime.now())); return;
       case 8:
         final now = DateTime.now();
         final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
-        await _openRoute(ChoghadiyaScreen(
-          date: now,
-          solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise),
-        ));
+        await _openRoute(ChoghadiyaScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise)));
         return;
-      case 9:
-        await _openRoute(const ReminderScreen());
-        return;
-      case 10:
-        await _openRoute(const SavedProfilesScreen());
-        return;
-      case 11:
-        await _openRoute(const VratKathaScreen());
-        return;
-      case 12:
-        await _openRoute(const KalnirnayScreen());
-        return;
-      case 13:
-        await _openRoute(const SadeSatiScreen());
-        return;
-      case 14:
-        await _openRoute(const DailyShlokaScreen());
-        return;
-      case 15:
-        await _openRoute(const HoraChakraScreen());
-        return;
-      case 16:
-        await _openRoute(const GocharScreen());
-        return;
-      case 17:
-        await _openRoute(const AnnualMuhuratScreen());
-        return;
-      case 18:
-        await _openRoute(const DigitalCompassScreen());
-        return;
-      case 19:
-        await _openRoute(const MoonPhaseScreen());
-        return;
-      case 20:
-        await _openRoute(const VargaAnalysisScreen());
-        return;
-      case 21:
-        await _openRoute(const AstrologerBrandingScreen());
-        return;
+      case 9: await _openRoute(const ReminderScreen()); return;
+      case 10: await _openRoute(const SavedProfilesScreen()); return;
+      case 11: await _openRoute(const VratKathaScreen()); return;
+      case 12: await _openRoute(const SanatanMasikPanchangScreen()); return;
+      case 13: await _openRoute(const SadeSatiScreen()); return;
+      case 14: await _openRoute(const DailyShlokaScreen()); return;
+      case 15: await _openRoute(const HoraChakraScreen()); return;
+      case 16: await _openRoute(const GocharScreen()); return;
+      case 17: await _openRoute(const AnnualMuhuratScreen()); return;
+      case 18: await _openRoute(const DigitalCompassScreen()); return;
+      case 19: await _openRoute(const MoonPhaseScreen()); return;
+      case 20: await _openRoute(const VargaAnalysisScreen()); return;
+      case 21: await _openRoute(const AstrologerBrandingScreen()); return;
     }
   }
 
   Future<void> _openPanchang() async {
     if (!mounted || _openingPanchang) return;
     setState(() => _openingPanchang = true);
-
     try {
       final now = DateTime.now();
       final data = await _calculatePanchangCached();
       if (!mounted) return;
-      await _openRoute(PanchangDetailScreen(
-        date: now,
-        data: data,
-        lat: _lat,
-        lon: _lon,
-        place: _place,
-      ));
+      await _openRoute(PanchangDetailScreen(date: now, data: data, lat: _lat, lon: _lon, place: _place));
     } catch (e) {
       if (!mounted) return;
       _panchangFuture = null;
       _panchangCacheKey = null;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('पंचांग खोलने में समस्या: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('पंचांग खोलने में समस्या: $e')));
     } finally {
       if (!mounted) return;
       setState(() => _openingPanchang = false);
@@ -431,32 +366,22 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       if (!mounted || !ok) return;
     }
     final returnPage = _page;
-    await Navigator.push<void>(
-      context,
-      MaterialPageRoute(builder: (_) => page),
-    );
+    await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => page));
     if (!mounted) return;
-
     setState(() {
       _page = returnPage;
       _bookStart = returnPage;
       _pageKey = GlobalKey<PageFlipWidgetState>();
     });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final state = _pageKey.currentState;
-      if (state != null && returnPage > 0) {
-        state.goToPage(returnPage);
-      }
+      if (state != null && returnPage > 0) state.goToPage(returnPage);
     });
   }
 
   Future<void> _pickLocation() async {
-    final result = await Navigator.push<dynamic>(
-      context,
-      MaterialPageRoute(builder: (_) => const LocationSearchScreen()),
-    );
+    final result = await Navigator.push<dynamic>(context, MaterialPageRoute(builder: (_) => const LocationSearchScreen()));
     if (result is! Map || !mounted) return;
     final loc = SavedLocation(
       name: '${result['name'] ?? 'स्थान'}',
@@ -475,13 +400,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   }
 
   Future<void> _openUma(String title, String description) async {
-    await _openRoute(
-      UmaScreen(
-        date: DateTime.now(),
-        pageContext: title,
-        pageDescription: description,
-      ),
-    );
+    await _openRoute(UmaScreen(date: DateTime.now(), pageContext: title, pageDescription: description));
   }
 
   Widget _paperPage(Widget child) => Container(
