@@ -11,6 +11,9 @@ import 'daily_shloka_screen.dart';
 import 'hora_chakra_screen.dart';
 import 'gochar_screen.dart';
 import 'annual_muhurat_screen.dart';
+import 'digital_compass_screen.dart';
+import 'moon_phase_screen.dart';
+import 'astrologer_branding_screen.dart';
 
 class ToolsScreen extends StatelessWidget {
   final DateTime date;
@@ -56,6 +59,15 @@ class ToolsScreen extends StatelessWidget {
         _tile(context, Icons.table_chart_outlined, 'मुहूर्त सारणी',
           'ब्रह्म, अभिजित, विजय, प्रदोष',
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnualMuhuratScreen()))),
+        _tile(context, Icons.explore_rounded, 'वैदिक दिशा-सूचक',
+          'दिशाशूल क्षेत्र और लक्ष्य दिशा',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DigitalCompassScreen()))),
+        _tile(context, Icons.nightlight_round, 'चन्द्र कला',
+          'तिथि, पक्ष और प्रकाश प्रतिशत',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoonPhaseScreen()))),
+        _tile(context, Icons.badge_outlined, 'ज्योतिषी ब्रांडिंग',
+          'PDF आवरण पर नाम, नगर, संस्थान',
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AstrologerBrandingScreen()))),
       ],
     ),
   );
