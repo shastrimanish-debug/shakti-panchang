@@ -5,7 +5,7 @@ import 'reminder_screen.dart';
 import 'kundali_screen.dart';
 import 'uma_screen.dart';
 import 'vrat_katha_screen.dart';
-import 'kalnirnay_screen.dart';
+import 'sanatan_masik_panchang_screen.dart';
 import 'sade_sati_screen.dart';
 import 'daily_shloka_screen.dart';
 import 'hora_chakra_screen.dart';
@@ -42,9 +42,9 @@ class ToolsScreen extends StatelessWidget {
         _tile(context, Icons.menu_book, 'व्रत कथा व आरती',
           'सत्यनारायण, एकादशी, प्रदोष, चालीसा',
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VratKathaScreen()))),
-        _tile(context, Icons.grid_view, 'कालनिर्णय पंचांग',
+        _tile(context, Icons.grid_view, 'सनातन मासिक पंचांग',
           'मासिक तिथि-ग्रिड व व्रत बिल्ले',
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const KalnirnayScreen()))),
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SanatanMasikPanchangScreen()))),
         _tile(context, Icons.nights_stay, 'साढ़े साती',
           'शनि चरण, ढैया और वैदिक उपाय',
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SadeSatiScreen()))),
