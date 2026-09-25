@@ -15,6 +15,17 @@ import 'location_search_screen.dart';
 import 'daily_rashifal_screen.dart';
 import 'numerology_screen.dart';
 import 'saved_profiles_screen.dart';
+import 'vrat_katha_screen.dart';
+import 'kalnirnay_screen.dart';
+import 'sade_sati_screen.dart';
+import 'daily_shloka_screen.dart';
+import 'hora_chakra_screen.dart';
+import 'gochar_screen.dart';
+import 'annual_muhurat_screen.dart';
+import 'digital_compass_screen.dart';
+import 'moon_phase_screen.dart';
+import 'astrologer_branding_screen.dart';
+import 'varga_analysis_screen.dart';
 import '../services/astronomical_panchang_service.dart';
 import '../models/astronomical_panchang.dart';
 import '../services/solar_service.dart';
@@ -114,6 +125,39 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       KeyedSubtree(key: const ValueKey('saved_kundali'), child: _sectionPage(context, 'सेव की गई कुंडलियाँ', 'पुरानी जन्म-कुंडलियाँ देखें और फिर से खोलें', Icons.history_rounded, () async {
         await _openRoute(const SavedProfilesScreen());
       })),
+      KeyedSubtree(key: const ValueKey('vratkatha'), child: _sectionPage(context, 'व्रत कथा व आरती', 'एकादशी, प्रदोष, सत्यनारायण कथा व आरती', Icons.menu_book_rounded, () async {
+        await _openRoute(const VratKathaScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('kalnirnay'), child: _sectionPage(context, 'कालनिर्णय', 'मासिक पंचांग ग्रिड • व्रत बिल्ले • विक्रम संवत्', Icons.grid_view_rounded, () async {
+        await _openRoute(const KalnirnayScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('sadesati'), child: _sectionPage(context, 'साढ़े साती', 'शनि चरण • ढैया • गोचर • उपाय', Icons.nights_stay_rounded, () async {
+        await _openRoute(const SadeSatiScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('shloka'), child: _sectionPage(context, 'आज का श्लोक', 'गीता • नीति • स्तोत्र संग्रह', Icons.format_quote_rounded, () async {
+        await _openRoute(const DailyShlokaScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('hora'), child: _sectionPage(context, 'होरा चक्र', '24 होरा • ग्रह स्वामी • वर्तमान काल', Icons.watch_later_outlined, () async {
+        await _openRoute(const HoraChakraScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('gochar'), child: _sectionPage(context, 'दैनिक गोचर', 'ग्रह गोचर चंद्र भाव से फल', Icons.public, () async {
+        await _openRoute(const GocharScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('annual_muhurat'), child: _sectionPage(context, 'मुहूर्त सारणी', 'ब्रह्म • अभिजित • विजय • प्रदोष', Icons.table_chart_outlined, () async {
+        await _openRoute(const AnnualMuhuratScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('compass'), child: _sectionPage(context, 'वैदिक दिशा-सूचक', 'दिशाशूल • लक्ष्य दिशा • यात्रा कम्पास', Icons.explore_rounded, () async {
+        await _openRoute(const DigitalCompassScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('moon'), child: _sectionPage(context, 'चन्द्र कला', 'तिथि • पक्ष • प्रकाश प्रतिशत', Icons.nightlight_round, () async {
+        await _openRoute(const MoonPhaseScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('varga'), child: _sectionPage(context, 'वर्ग विश्लेषण', 'षोडश वर्ग • विवाह • करियर • धन', Icons.hub_outlined, () async {
+        await _openRoute(const VargaAnalysisScreen());
+      })),
+      KeyedSubtree(key: const ValueKey('branding'), child: _sectionPage(context, 'ज्योतिषी ब्रांडिंग', 'PDF आवरण • नाम • संस्थान', Icons.badge_outlined, () async {
+        await _openRoute(const AstrologerBrandingScreen());
+      })),
     ];
 
     return Scaffold(
@@ -161,7 +205,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
             child: Column(
               children: [
-                if (_page >= 1 && _page <= 10)
+                if (_page >= 1 && _page <= 21)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: FilledButton.icon(
@@ -272,11 +316,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   }
 
   void _primePanchang() {
-    // Warm only an in-memory Future. Nothing is written to disk, so there is
-    // no stale persistent cache, while opening Panchang becomes immediate
-    // after the astronomical calculation has completed once.
     _calculatePanchangCached().then<void>((_) {}, onError: (_, __) {
-      // A failed warm-up is harmless; the next tap retries with a fresh Future.
       _panchangFuture = null;
       _panchangCacheKey = null;
     });
@@ -321,6 +361,39 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       case 10:
         await _openRoute(const SavedProfilesScreen());
         return;
+      case 11:
+        await _openRoute(const VratKathaScreen());
+        return;
+      case 12:
+        await _openRoute(const KalnirnayScreen());
+        return;
+      case 13:
+        await _openRoute(const SadeSatiScreen());
+        return;
+      case 14:
+        await _openRoute(const DailyShlokaScreen());
+        return;
+      case 15:
+        await _openRoute(const HoraChakraScreen());
+        return;
+      case 16:
+        await _openRoute(const GocharScreen());
+        return;
+      case 17:
+        await _openRoute(const AnnualMuhuratScreen());
+        return;
+      case 18:
+        await _openRoute(const DigitalCompassScreen());
+        return;
+      case 19:
+        await _openRoute(const MoonPhaseScreen());
+        return;
+      case 20:
+        await _openRoute(const VargaAnalysisScreen());
+        return;
+      case 21:
+        await _openRoute(const AstrologerBrandingScreen());
+        return;
     }
   }
 
@@ -357,10 +430,6 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
       final ok = await AdGate.beforeOpen(context);
       if (!mounted || !ok) return;
     }
-    // PageFlipWidget keeps an internal animation/snapshot state. Rebuilding the
-    // book with the same GlobalKey after a child route returns can leave that
-    // snapshot intercepting taps. Recreate the widget after every child route
-    // and restore the page the user was reading.
     final returnPage = _page;
     await Navigator.push<void>(
       context,
