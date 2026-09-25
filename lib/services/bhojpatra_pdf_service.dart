@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -16,7 +15,7 @@ import 'pdf_devanagari_fonts.dart';
 /// फ़ॉन्ट ऐप में एम्बेड हैं, इसलिए नेट बंद होने पर पन्ना खाली नहीं रहता।
 class BhojpatraPdfService {
   static const _bg = PdfColor.fromInt(0xFFFBF3E0);
-  static const _card = PdfColor.fromInt(0xFFFFFCF7);
+  static const _cardFill = PdfColor.fromInt(0xFFFFFCF7);
   static const _brown = PdfColor.fromInt(0xFF5C3A21);
   static const _gold = PdfColor.fromInt(0xFFC58F27);
   static const _red = PdfColor.fromInt(0xFF8B1E1E);
@@ -275,21 +274,21 @@ class BhojpatraPdfService {
             ),
             pw.SizedBox(height: 12),
             pw.Row(children: [
-              pw.Expanded(child: _card(f, 'तिथि', '${p.paksha} ${p.tithi}', 'संख्या ${p.tithiNumber}')),
+              pw.Expanded(child: _infoCard(f, 'तिथि', '${p.paksha} ${p.tithi}', 'संख्या ${p.tithiNumber}')),
               pw.SizedBox(width: 10),
-              pw.Expanded(child: _card(f, 'नक्षत्र', p.nakshatra, null)),
+              pw.Expanded(child: _infoCard(f, 'नक्षत्र', p.nakshatra, null)),
             ]),
             pw.SizedBox(height: 10),
             pw.Row(children: [
-              pw.Expanded(child: _card(f, 'योग', p.yoga, null)),
+              pw.Expanded(child: _infoCard(f, 'योग', p.yoga, null)),
               pw.SizedBox(width: 10),
-              pw.Expanded(child: _card(f, 'करण', p.karana, null)),
+              pw.Expanded(child: _infoCard(f, 'करण', p.karana, null)),
             ]),
             pw.SizedBox(height: 10),
             pw.Row(children: [
-              pw.Expanded(child: _card(f, 'सूर्य राशि', _rashi(p.solarLongitude), 'सूर्य ${p.solarLongitude.toStringAsFixed(2)}°')),
+              pw.Expanded(child: _infoCard(f, 'सूर्य राशि', _rashi(p.solarLongitude), 'सूर्य ${p.solarLongitude.toStringAsFixed(2)}°')),
               pw.SizedBox(width: 10),
-              pw.Expanded(child: _card(f, 'चंद्र राशि', _rashi(p.lunarLongitude), 'चंद्र ${p.lunarLongitude.toStringAsFixed(2)}°')),
+              pw.Expanded(child: _infoCard(f, 'चंद्र राशि', _rashi(p.lunarLongitude), 'चंद्र ${p.lunarLongitude.toStringAsFixed(2)}°')),
             ]),
             pw.SizedBox(height: 12),
             _row(f, 'अयनांश', '${p.ayanamshaName}  ${p.ayanamsha.toStringAsFixed(4)}°'),
@@ -320,7 +319,7 @@ class BhojpatraPdfService {
       pw.Container(
         padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         decoration: pw.BoxDecoration(
-          color: _card,
+          color: _cardFill,
           border: pw.Border.all(color: _gold, width: 0.8),
           borderRadius: pw.BorderRadius.circular(10),
         ),
@@ -331,11 +330,11 @@ class BhojpatraPdfService {
         ]),
       );
 
-  static pw.Widget _card(({pw.Font regular, pw.Font bold}) f, String k, String v, String? s) =>
+  static pw.Widget _infoCard(({pw.Font regular, pw.Font bold}) f, String k, String v, String? s) =>
       pw.Container(
         padding: const pw.EdgeInsets.fromLTRB(12, 10, 12, 10),
         decoration: pw.BoxDecoration(
-          color: _card,
+          color: _cardFill,
           border: pw.Border.all(color: PdfColor.fromInt(0xFFEEE0D0), width: 0.8),
           borderRadius: pw.BorderRadius.circular(10),
         ),
