@@ -147,7 +147,6 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
             _kv('अयनांश', '${_data.ayanamshaName}  ${_data.ayanamsha.toStringAsFixed(4)}°'),
             _kv('सूर्योदय', _hm(_data.localSunrise)),
             _kv('सूर्यास्त', _hm(_data.localSunset)),
-            _kv('इंजन', _data.engine),
             const SizedBox(height: 8),
             FutureBuilder(
               future: PanchangBoundaryService(AstronomyEngineService()).calculate(_date),
@@ -225,10 +224,6 @@ class _PanchangDetailScreenState extends State<PanchangDetailScreen> {
                 await CalcSettingsStore().save(n);
                 if (mounted) setState(() => _s = n);
               },
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(_data.precisionNote, style: const TextStyle(fontSize: 12, color: Colors.black54)),
             ),
           ] else if (_tab == 1) ...[
             ...inaus.map((w) => _timeCard(w.title, _hm(w.start), _hm(w.end), tyajya: true)),
