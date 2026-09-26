@@ -3,13 +3,13 @@ import 'package:page_flip/page_flip.dart';
 import '../models/kundali_model.dart';
 import '../services/pdf_service.dart';
 import '../services/kundali_calculator.dart';
-import '../services/kundali_profile_store.dart'; 
+import '../services/kundali_profile_store.dart';
 import '../widgets/kundali_chart.dart';
 import 'kundali_modules_screen.dart';
-import 'location_search_screen.dart'; 
+import 'location_search_screen.dart';
 import 'saved_profiles_screen.dart';
 import 'uma_screen.dart';
-import 'personalized_prediction_screen.dart';  
+import 'personalized_prediction_screen.dart';
 
 const Color _bhojBg = Color(0xFFF4E8D1);
 const Color _bhojCard = Color(0xFFFAF2E4);
@@ -118,13 +118,13 @@ class _KundaliScreenState extends State<KundaliScreen> {
   Future<void> _calculateKundali() async {
     if (_nameController.text.trim().isEmpty || _placeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('\u0915\u0943\u092a\u092f\u093e \u091c\u093e\u0924\u0915 \u0915\u093e \u0928\u093e\u092e \u0914\u0930 \u091c\u0928\u094d\u092e \u0938\u094d\u0925\u093e\u0928 \u0926\u0930\u094d\u091c \u0915\u0930\u0947\u0902!')),
+        const SnackBar(content: Text('कृपया जातक का नाम और जन्म स्थान दर्ज करें!')),
       );
       return;
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('\u0915\u0941\u0902\u0921\u0932\u0940 \u0915\u0940 \u0917\u0923\u0928\u093e \u0915\u0940 \u091c\u093e \u0930\u0939\u0940 \u0939\u0948...')),
+        const SnackBar(content: Text('कुंडली की गणना की जा रही है...')),
       );
     }
     try {
@@ -157,14 +157,14 @@ class _KundaliScreenState extends State<KundaliScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('\u0915\u0941\u0902\u0921\u0932\u0940 \u0938\u092b\u0932\u0924\u093e\u092a\u0942\u0930\u094d\u0935\u0915 \u091c\u0928\u0930\u0947\u091f \u0914\u0930 \u0938\u0947\u0935 \u0915\u0930 \u0932\u0940 \u0917\u0908 \u0939\u0948!')),
+          const SnackBar(content: Text('कुंडली सफलतापूर्वक जनरेट और सेव कर ली गई है!')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('\u0917\u0923\u0928\u093e \u092e\u0947\u0902 \u0924\u094d\u0930\u0941\u091f\u093f: $e')),
+          SnackBar(content: Text('गणना में त्रुटि: $e')),
         );
       }
     }
@@ -183,8 +183,8 @@ class _KundaliScreenState extends State<KundaliScreen> {
         builder: (_) => UmaScreen(
           date: DateTime.now(),
           kundali: _isCalculated ? _currentKundali : null,
-          pageContext: const ['\u0915\u0941\u0902\u0921\u0932\u0940 \u0935\u093f\u0935\u0930\u0923', '\u091c\u0928\u094d\u092e \u0915\u0941\u0902\u0921\u0932\u0940 \u091a\u0915\u094d\u0930', '\u0915\u0941\u0902\u0921\u0932\u0940 \u092b\u0932'][_page],
-          pageDescription: const ['\u091c\u093e\u0924\u0915 \u0935\u093f\u0935\u0930\u0923', 'D1', 'D1-D60'][_page],
+          pageContext: const ['कुंडली विवरण', 'जन्म कुंडली चक्र', 'कुंडली फल'][_page],
+          pageDescription: const ['जातक विवरण', 'D1 लग्न चक्र', 'D1-D60'][_page],
         ),
       ),
     );
@@ -206,19 +206,19 @@ class _KundaliScreenState extends State<KundaliScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('\u0915\u0941\u0902\u0921\u0932\u0940', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19)),
+        title: const Text('कुंडली', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19)),
         actions: [
           IconButton(icon: const Icon(Icons.chevron_left_rounded), onPressed: _page > 0 ? () => _goToPage(_page - 1) : null),
-          Center(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 2), child: Text('\u092a\u0928\u094d\u0928\u093e ${_page + 1}/3', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12)))),
+          Center(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 2), child: Text('पन्ना ${_page + 1}/3', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12)))),
           IconButton(icon: const Icon(Icons.chevron_right_rounded), onPressed: _page < 2 ? () => _goToPage(_page + 1) : null),
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_rounded),
-            tooltip: _isCalculated ? 'PDF' : 'calculate first',
+            tooltip: _isCalculated ? 'सम्पूर्ण PDF' : 'पहले गणना करें',
             onPressed: _isCalculated ? () => PdfService.generateAndSaveKundali(context, _currentKundali) : null,
           ),
           IconButton(
             icon: const Icon(Icons.menu_book_rounded),
-            tooltip: _isCalculated ? 'exhaustive PDF' : 'calculate first',
+            tooltip: _isCalculated ? 'विस्तृत पत्रिका' : 'पहले गणना करें',
             onPressed: _isCalculated ? () => PdfService.generateExhaustiveKundali(context, _currentKundali) : null,
           ),
           IconButton(icon: const Icon(Icons.auto_awesome_rounded), onPressed: _openUma),
@@ -239,11 +239,11 @@ class _KundaliScreenState extends State<KundaliScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _chapterDot('\u0935\u093f\u0935\u0930\u0923', 0),
+                  _chapterDot('विवरण', 0),
                   _chapterLine(),
-                  _chapterDot('\u091a\u0915\u094d\u0930', 1),
+                  _chapterDot('चक्र', 1),
                   _chapterLine(),
-                  _chapterDot('\u092b\u0932', 2),
+                  _chapterDot('फल', 2),
                 ],
               ),
             ),
@@ -253,8 +253,8 @@ class _KundaliScreenState extends State<KundaliScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextButton.icon(onPressed: _page > 0 ? () => _goToPage(_page - 1) : null, icon: const Icon(Icons.arrow_back_ios_rounded, size: 16), label: const Text('prev')),
-                  TextButton.icon(onPressed: _page < 2 ? () => _goToPage(_page + 1) : null, icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16), label: const Text('next')),
+                  TextButton.icon(onPressed: _page > 0 ? () => _goToPage(_page - 1) : null, icon: const Icon(Icons.arrow_back_ios_rounded, size: 16), label: const Text('पिछला पन्ना')),
+                  TextButton.icon(onPressed: _page < 2 ? () => _goToPage(_page + 1) : null, icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16), label: const Text('अगला पन्ना')),
                 ],
               ),
             ),
@@ -291,7 +291,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
     decoration: BoxDecoration(color: _bhojCard, borderRadius: BorderRadius.circular(10), border: Border.all(color: _bhojBorder.withValues(alpha: .65))),
     child: Text(
-      '${_currentKundali.name}  •  ${_currentKundali.birthDate.day}-${_currentKundali.birthDate.month}-${_currentKundali.birthDate.year}  •  ${_currentKundali.birthTime}  •  ${_currentKundali.birthPlace}',
+      'जातक: ${_currentKundali.name}  •  जन्म: ${_currentKundali.birthDate.day}-${_currentKundali.birthDate.month}-${_currentKundali.birthDate.year}  •  समय: ${_currentKundali.birthTime}  •  स्थान: ${_currentKundali.birthPlace}',
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.center,
@@ -311,15 +311,15 @@ class _KundaliScreenState extends State<KundaliScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('\u091c\u093e\u0924\u0915 \u091c\u0928\u094d\u092e \u0935\u093f\u0935\u0930\u0923', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
+                const Text('जातक का जन्म विवरण', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
                 const SizedBox(height: 12),
-                TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder())),
+                TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'जातक का नाम', border: OutlineInputBorder())),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _placeController,
                   readOnly: true,
                   onTap: _openLocationSearch,
-                  decoration: const InputDecoration(labelText: 'Place', border: OutlineInputBorder(), suffixIcon: Icon(Icons.location_on_rounded, color: _bhojBrown)),
+                  decoration: const InputDecoration(labelText: 'जन्म स्थान (शहर)', border: OutlineInputBorder(), suffixIcon: Icon(Icons.location_on_rounded, color: _bhojBrown)),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -328,7 +328,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
                       child: InkWell(
                         onTap: _pickDate,
                         child: InputDecorator(
-                          decoration: const InputDecoration(labelText: 'Date', border: OutlineInputBorder()),
+                          decoration: const InputDecoration(labelText: 'जन्म तिथि', border: OutlineInputBorder()),
                           child: Text('${_selectedDate.day}-${_selectedDate.month}-${_selectedDate.year}', style: const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
@@ -338,7 +338,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
                       child: InkWell(
                         onTap: _pickTime,
                         child: InputDecorator(
-                          decoration: const InputDecoration(labelText: 'Time', border: OutlineInputBorder()),
+                          decoration: const InputDecoration(labelText: 'जन्म समय', border: OutlineInputBorder()),
                           child: Text(_selectedTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
@@ -353,7 +353,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
                     style: ElevatedButton.styleFrom(backgroundColor: _bhojBrown, foregroundColor: _bhojBg),
                     onPressed: _calculateKundali,
                     icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Calculate'),
+                    label: const Text('कुंडली की गणना व सेव करें'),
                   ),
                 ),
               ],
@@ -369,7 +369,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: _bhojBrown, foregroundColor: _bhojBg),
               onPressed: () => PdfService.generateAndSaveKundali(context, _currentKundali),
               icon: const Icon(Icons.picture_as_pdf_rounded),
-              label: const Text('PDF'),
+              label: const Text('सम्पूर्ण PDF रिपोर्ट'),
             ),
           ),
           const SizedBox(height: 8),
@@ -379,7 +379,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
             child: OutlinedButton.icon(
               onPressed: () => PdfService.generateExhaustiveKundali(context, _currentKundali),
               icon: const Icon(Icons.menu_book_rounded),
-              label: const Text('\u0935\u093f\u0938\u094d\u0924\u0943\u0924 \u0915\u0941\u0902\u0921\u0932\u0940 \u092a\u0924\u094d\u0930\u093f\u0915\u093e'),
+              label: const Text('विस्तृत कुंडली पत्रिका'),
             ),
           ),
           const SizedBox(height: 10),
@@ -391,9 +391,11 @@ class _KundaliScreenState extends State<KundaliScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('\u0932\u0917\u094d\u0928 ${_currentKundali.lagnaRashi}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                  Text('\u091a\u0902\u0926\u094d\u0930 ${_currentKundali.moonRashi}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                  Text('\u0928\u0915\u094d\u0937\u0924\u094d\u0930 ${_currentKundali.nakshatra}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text('मुख्य ज्योतिषीय तथ्य', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
+                  const Divider(),
+                  Text('• लग्न राशि: ${_currentKundali.lagnaRashi}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text('• चंद्र राशि: ${_currentKundali.moonRashi}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text('• नक्षत्र: ${_currentKundali.nakshatra}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -410,7 +412,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
           style: ElevatedButton.styleFrom(backgroundColor: _bhojBrown, foregroundColor: _bhojBg),
           onPressed: _calculateKundali,
           icon: const Icon(Icons.calculate_rounded),
-          label: const Text('Calculate'),
+          label: const Text('अभी कुंडली की गणना करें'),
         ),
       );
     }
@@ -418,12 +420,12 @@ class _KundaliScreenState extends State<KundaliScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          const Text('D1', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
+          const Text('उत्तर भारतीय जन्म कुंडली चक्र (D1)', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
           const SizedBox(height: 12),
           Container(
             height: 350,
             decoration: BoxDecoration(color: _bhojCard, border: Border.all(color: _bhojBorder, width: 2), borderRadius: BorderRadius.circular(12)),
-            child: KundaliChart(data: _currentKundali, title: 'D1', embedded: true),
+            child: KundaliChart(data: _currentKundali, title: 'D1 (लग्न)', embedded: true),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -433,7 +435,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: _bhojBrown, foregroundColor: _bhojBg),
               onPressed: () => PdfService.generateAndSaveKundali(context, _currentKundali),
               icon: const Icon(Icons.picture_as_pdf_rounded),
-              label: const Text('PDF'),
+              label: const Text('सम्पूर्ण PDF रिपोर्ट डाउनलोड करें'),
             ),
           ),
         ],
@@ -448,7 +450,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
           style: ElevatedButton.styleFrom(backgroundColor: _bhojBrown, foregroundColor: _bhojBg),
           onPressed: _calculateKundali,
           icon: const Icon(Icons.calculate_rounded),
-          label: const Text('Calculate'),
+          label: const Text('अभी गणना करें'),
         ),
       );
     }
@@ -459,9 +461,12 @@ class _KundaliScreenState extends State<KundaliScreen> {
           tileColor: _bhojCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: _bhojBorder)),
           leading: const Icon(Icons.menu_book_rounded, color: _bhojBrown),
-          title: const Text('D1-D60'),
+          title: const Text('अडवांस्ड कुंडली मॉड्यूल्स (D1-D60)', style: TextStyle(fontWeight: FontWeight.bold, color: _bhojBrown)),
+          subtitle: const Text('प्रश्न कुंडली, वर्ग चार्ट, दशा और उपाय देखें'),
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => KundaliModulesScreen(data: _currentKundali))),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => KundaliModulesScreen(data: _currentKundali)));
+          },
         ),
       ],
     );
