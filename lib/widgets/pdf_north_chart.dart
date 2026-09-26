@@ -35,6 +35,8 @@ class PdfNorthChart extends pw.StatelessWidget {
       final tag = '${_abbr[p.planet] ?? p.planet}${p.isRetrograde ? 'R' : ''}';
       byHouse.putIfAbsent(p.house, () => []).add(tag);
     }
+    final pdfRegular = regular.getFont(context);
+    final pdfBold = bold.getFont(context);
     return pw.Column(
       children: [
         pw.Text(
@@ -47,7 +49,7 @@ class PdfNorthChart extends pw.StatelessWidget {
           height: 320,
           child: pw.CustomPaint(
             painter: (PdfGraphics g, PdfPoint size) {
-              _paint(g, size, byHouse);
+              _paint(g, size, byHouse, pdfRegular, pdfBold);
             },
           ),
         ),
@@ -60,7 +62,13 @@ class PdfNorthChart extends pw.StatelessWidget {
     );
   }
 
-  void _paint(PdfGraphics g, PdfPoint size, Map<int, List<String>> byHouse) {
+  void _paint(
+    PdfGraphics g,
+    PdfPoint size,
+    Map<int, List<String>> byHouse,
+    PdfFont pdfRegular,
+    PdfFont pdfBold,
+  ) {
     final w = size.x;
     final h = size.y;
     final brown = PdfColor.fromInt(0xFF5C3A21);
@@ -106,9 +114,15 @@ class PdfNorthChart extends pw.StatelessWidget {
     g.setFillColor(brown);
     for (final e in spots.entries) {
       final planets = (byHouse[e.key] ?? const []).join(' ');
-      g.drawString(pw.Font.helveticaBold(), 9, '${e.key}', e.value.x - 4, e.value.y + 6);
+      g.drawString(pdfBold, 9, '${e.key}', e.value.x - 4, e.value.y + 6);
       if (planets.isNotEmpty) {
-        g.drawString(pw.Font.helvetica(), 8, planets, e.value.x - planets.length * 2.1, e.value.y - 6);
+        g.drawString(
+          pdfRegular,
+          8,
+          planets,
+          e.value.x - planets.length * 2.1,
+          e.value.y - 6,
+        );
       }
     }
   }
