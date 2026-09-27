@@ -187,7 +187,7 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+            padding: EdgeInsets.fromLTRB(12, 6, 12, MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom + 8 : 16),
             child: Column(
               children: [
                 if (_page >= 1 && _page <= 21)

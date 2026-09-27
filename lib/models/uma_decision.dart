@@ -8,6 +8,7 @@ class UmaDecision {
   final List<String> reasons;
   final List<String> checks;
   final String action;
+  final String? actionType;
 
   const UmaDecision({
     required this.userQuestion,
@@ -17,5 +18,6 @@ class UmaDecision {
     required this.reasons,
     required this.checks,
     required this.action,
+    this.actionType,
   });
 }
