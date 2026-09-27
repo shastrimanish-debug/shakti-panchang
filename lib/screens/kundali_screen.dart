@@ -24,7 +24,7 @@ class KundaliScreen extends StatefulWidget {
 }
 
 class _KundaliScreenState extends State<KundaliScreen> {
-  GlobalKey<PageFlipWidgetState> _pageKey = GlobalKey<PageFlipWidgetState>();
+  final PageController _pageController = PageController();
   int _page = 0;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _placeController = TextEditingController();
@@ -34,6 +34,14 @@ class _KundaliScreenState extends State<KundaliScreen> {
   double _lng = 0.0;
   bool _isCalculated = false;
   late KundaliData _currentKundali;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _nameController.dispose();
+    _placeController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -67,19 +75,39 @@ class _KundaliScreenState extends State<KundaliScreen> {
         _lat = (result['lat'] as num?)?.toDouble() ?? 0.0;
         _lng = (result['lng'] as num?)?.toDouble() ?? 0.0;
         try {
-          if (result['date'] != null) {
-            final parts = result['date'].split('-');
+          final rawDate = (result['date'] ?? result['birthDate'] ?? '').toString();
+          if (rawDate.isNotEmpty) {
+            final cleanDate = rawDate.contains('T') ? rawDate.substring(0, 10) : rawDate;
+            final parts = cleanDate.split('-');
             if (parts.length == 3) {
-              _selectedDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+              int y, m, d;
+              if (parts[0].length == 4) {
+                // YYYY-MM-DD
+                y = int.parse(parts[0]);
+                m = int.parse(parts[1]);
+                d = int.parse(parts[2]);
+              } else {
+                // DD-MM-YYYY
+                d = int.parse(parts[0]);
+                m = int.parse(parts[1]);
+                y = int.parse(parts[2]);
+              }
+              _selectedDate = DateTime(y, m, d);
             }
           }
-          if (result['time'] != null) {
-            final tParts = result['time'].split(':');
-            if (tParts.length == 2) {
-              _selectedTime = TimeOfDay(hour: int.parse(tParts[0]), minute: int.parse(tParts[1]));
+          final rawTime = (result['time'] ?? result['birthTime'] ?? '').toString();
+          if (rawTime.isNotEmpty) {
+            final tParts = rawTime.split(':');
+            if (tParts.isNotEmpty) {
+              _selectedTime = TimeOfDay(
+                hour: int.tryParse(tParts[0]) ?? 12,
+                minute: tParts.length > 1 ? (int.tryParse(tParts[1]) ?? 0) : 0,
+              );
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          debugPrint('Error parsing saved profile: $e');
+        }
       });
       await _calculateKundali();
     }
@@ -143,7 +171,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
           _currentKundali = calculatedData;
           _isCalculated = true;
           _page = 0;
-          _pageKey = GlobalKey<PageFlipWidgetState>();
+          
         });
       }
       await KundaliProfileStore.saveProfile({
@@ -172,7 +200,13 @@ class _KundaliScreenState extends State<KundaliScreen> {
 
   void _goToPage(int page) {
     if (page < 0 || page > 2) return;
-    _pageKey.currentState?.goToPage(page);
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        page,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
     if (mounted) setState(() => _page = page);
   }
 
@@ -247,7 +281,15 @@ class _KundaliScreenState extends State<KundaliScreen> {
                 ],
               ),
             ),
-            Expanded(child: PageFlipWidget(key: _pageKey, backgroundColor: _bhojBg, children: pages)),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (i) {
+                  if (mounted) setState(() => _page = i);
+                },
+                children: pages,
+              ),
+            ),
             Container(
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
               child: Row(
@@ -311,7 +353,23 @@ class _KundaliScreenState extends State<KundaliScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('जातक का जन्म विवरण', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('जातक का जन्म विवरण', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: _bhojBrown)),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: _bhojBrown,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        backgroundColor: _bhojBrown.withValues(alpha: 0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: _openHistory,
+                      icon: const Icon(Icons.history_rounded, size: 18),
+                      label: const Text('सेव कुंडलियाँ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'जातक का नाम', border: OutlineInputBorder())),
                 const SizedBox(height: 12),

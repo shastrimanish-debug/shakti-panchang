@@ -95,7 +95,7 @@ class UmaAiService {
     KundaliData? kundali,
     UmaPanchangSnap? panchang,
   }) async {
-    final models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+    final models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     final kundaliInfo = kundali != null
         ? 'जातक: ${kundali.name}, लग्न: ${kundali.lagnaRashi}, चंद्र राशि: ${kundali.moonRashi}, नक्षत्र: ${kundali.nakshatra}, महादशा: ${kundali.mahadasha}, अंतर्दशा: ${kundali.antardasha}'
         : 'कोई कुंडली अभी लोड नहीं है।';

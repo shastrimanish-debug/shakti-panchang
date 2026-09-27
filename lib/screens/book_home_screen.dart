@@ -361,23 +361,27 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   }
 
   Future<void> _openRoute(Widget page, {bool skipAd = false}) async {
-    if (!skipAd) {
-      final ok = await AdGate.beforeOpen(context);
-      if (!mounted || !ok) return;
-    }
-    final returnPage = _page;
-    await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => page));
-    if (!mounted) return;
-    setState(() {
-      _page = returnPage;
-      _bookStart = returnPage;
-      _pageKey = GlobalKey<PageFlipWidgetState>();
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    try {
+      if (!skipAd) {
+        final ok = await AdGate.beforeOpen(context);
+        if (!mounted || !ok) return;
+      }
+      final returnPage = _page;
+      await Navigator.of(context, rootNavigator: false).push<void>(
+        MaterialPageRoute(builder: (_) => page),
+      );
       if (!mounted) return;
-      final state = _pageKey.currentState;
-      if (state != null && returnPage > 0) state.goToPage(returnPage);
-    });
+      setState(() {
+        _page = returnPage;
+      });
+    } catch (e) {
+      debugPrint('Error navigating to page: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('अध्याय खोलने में समस्या: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _pickLocation() async {
