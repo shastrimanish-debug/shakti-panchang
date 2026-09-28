@@ -87,28 +87,28 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
   Widget build(BuildContext context) {
     final pages = <Widget>[
       KeyedSubtree(key: const ValueKey('cover'), child: _cover(context)),
-      KeyedSubtree(key: const ValueKey('panchang'), child: _sectionPage(context, 'पंचांग', 'तिथि • नक्षत्र • योग • करण • सूर्य समय', Icons.calendar_month, () => _openPanchang())),
-      KeyedSubtree(key: const ValueKey('kundali'), child: _sectionPage(context, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
+      KeyedSubtree(key: const ValueKey('panchang'), child: _sectionPage(context, 1, 'पंचांग', 'तिथि • नक्षत्र • योग • करण • सूर्य समय', Icons.calendar_month, () => _openPanchang())),
+      KeyedSubtree(key: const ValueKey('kundali'), child: _sectionPage(context, 2, 'कुंडली', 'जन्म कुंडली • वर्ग • दशा • फलित', Icons.auto_awesome, () async {
         await _openRoute(const KundaliScreen());
       })),
-      KeyedSubtree(key: const ValueKey('daily_rashifal'), child: _sectionPage(context, 'दैनिक राशिफल', 'जन्म-कुंडली • दशा • गोचर • शुभ अंक', Icons.wb_sunny_rounded, () async {
+      KeyedSubtree(key: const ValueKey('daily_rashifal'), child: _sectionPage(context, 3, 'दैनिक राशिफल', 'जन्म-कुंडली • दशा • गोचर • शुभ अंक', Icons.wb_sunny_rounded, () async {
         await _openRoute(const DailyRashifalScreen());
       })),
-      KeyedSubtree(key: const ValueKey('numerology'), child: _sectionPage(context, 'अंक ज्योतिष', 'मूलांक • भाग्यांक • नामांक • शुभ अंक', Icons.tag, () async {
+      KeyedSubtree(key: const ValueKey('numerology'), child: _sectionPage(context, 4, 'अंक ज्योतिष', 'मूलांक • भाग्यांक • नामांक • शुभ अंक', Icons.tag, () async {
         await _openRoute(const NumerologyScreen());
       })),
-      KeyedSubtree(key: const ValueKey('muhurat'), child: _sectionPage(context, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () async {
+      KeyedSubtree(key: const ValueKey('muhurat'), child: _sectionPage(context, 5, 'शुभ मुहूर्त', 'विवाह • गृहप्रवेश • कार्यारम्भ', Icons.access_time_filled, () async {
         final now = DateTime.now();
         final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
         await _openRoute(MuhuratScreen(date: now, solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise)));
       })),
-      KeyedSubtree(key: const ValueKey('yatra'), child: _sectionPage(context, 'यात्रा', 'दिशाशूल • शुभ दिशा • यात्रा सलाह', Icons.alt_route, () async {
+      KeyedSubtree(key: const ValueKey('yatra'), child: _sectionPage(context, 6, 'यात्रा', 'दिशाशूल • शुभ दिशा • यात्रा सलाह', Icons.alt_route, () async {
         await _openRoute(YatraScreen(date: DateTime.now(), fromLat: _lat, fromLon: _lon, fromName: _place));
       })),
-      KeyedSubtree(key: const ValueKey('festivals'), child: _sectionPage(context, 'व्रत एवं त्योहार', 'एकादशी • पूर्णिमा • अमावस्या • पर्व', Icons.festival, () async {
+      KeyedSubtree(key: const ValueKey('festivals'), child: _sectionPage(context, 7, 'व्रत एवं त्योहार', 'एकादशी • पूर्णिमा • अमावस्या • पर्व', Icons.festival, () async {
         await _openRoute(FestivalsScreen(date: DateTime.now()));
       })),
-      KeyedSubtree(key: const ValueKey('shubh'), child: _sectionPage(context, 'शुभ समय', 'चौघड़िया • राहुकाल • यमगण्ड • गुलिक', Icons.timer, () async {
+      KeyedSubtree(key: const ValueKey('shubh'), child: _sectionPage(context, 8, 'शुभ समय', 'चौघड़िया • राहुकाल • यमगण्ड • गुलिक', Icons.timer, () async {
         final now = DateTime.now();
         final solar = SolarService.forDate(date: now, latitude: _lat, longitude: _lon);
         await _openRoute(ChoghadiyaScreen(
@@ -116,43 +116,43 @@ class _BookHomeScreenState extends State<BookHomeScreen> {
           solar: SolarTimes(sunrise: solar.sunrise, sunset: solar.sunset, nextSunrise: solar.nextSunrise),
         ));
       })),
-      KeyedSubtree(key: const ValueKey('reminder'), child: _sectionPage(context, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
+      KeyedSubtree(key: const ValueKey('reminder'), child: _sectionPage(context, 9, 'रिमाइंडर', 'व्रत और शुभ समय के लिए सूचनाएँ', Icons.notifications_active, () async {
         await _openRoute(const ReminderScreen());
       })),
-      KeyedSubtree(key: const ValueKey('saved_kundali'), child: _sectionPage(context, 'सेव की गई कुंडलियाँ', 'पुरानी जन्म-कुंडलियाँ देखें और फिर से खोलें', Icons.history_rounded, () async {
+      KeyedSubtree(key: const ValueKey('saved_kundali'), child: _sectionPage(context, 10, 'सेव की गई कुंडलियाँ', 'पुरानी जन्म-कुंडलियाँ देखें और फिर से खोलें', Icons.history_rounded, () async {
         await _openRoute(const SavedProfilesScreen());
       })),
-      KeyedSubtree(key: const ValueKey('vratkatha'), child: _sectionPage(context, 'व्रत कथा व आरती', 'एकादशी, प्रदोष, सत्यनारायण कथा व आरती', Icons.menu_book_rounded, () async {
+      KeyedSubtree(key: const ValueKey('vratkatha'), child: _sectionPage(context, 11, 'व्रत कथा व आरती', 'एकादशी, प्रदोष, सत्यनारायण कथा व आरती', Icons.menu_book_rounded, () async {
         await _openRoute(const VratKathaScreen());
       })),
-      KeyedSubtree(key: const ValueKey('masik_panchang'), child: _sectionPage(context, 'सनातन मासिक पंचांग', 'मासिक पंचांग ग्रिड • व्रत बिल्ले • विक्रम संवत', Icons.grid_view_rounded, () async {
+      KeyedSubtree(key: const ValueKey('masik_panchang'), child: _sectionPage(context, 12, 'सनातन मासिक पंचांग', 'मासिक पंचांग ग्रिड • व्रत बिल्ले • विक्रम संवत', Icons.grid_view_rounded, () async {
         await _openRoute(const SanatanMasikPanchangScreen());
       })),
-      KeyedSubtree(key: const ValueKey('sadesati'), child: _sectionPage(context, 'साढ़े साती', 'शनि चरण • ढैया • गोचर • उपाय', Icons.nights_stay_rounded, () async {
+      KeyedSubtree(key: const ValueKey('sadesati'), child: _sectionPage(context, 13, 'साढ़े साती', 'शनि चरण • ढैया • गोचर • उपाय', Icons.nights_stay_rounded, () async {
         await _openRoute(const SadeSatiScreen());
       })),
-      KeyedSubtree(key: const ValueKey('shloka'), child: _sectionPage(context, 'आज का श्लोक', 'गीता • नीति • स्तोत्र संग्रह', Icons.format_quote_rounded, () async {
+      KeyedSubtree(key: const ValueKey('shloka'), child: _sectionPage(context, 14, 'आज का श्लोक', 'गीता • नीति • स्तोत्र संग्रह', Icons.format_quote_rounded, () async {
         await _openRoute(const DailyShlokaScreen());
       })),
-      KeyedSubtree(key: const ValueKey('hora'), child: _sectionPage(context, 'होरा चक्र', '24 होरा • ग्रह स्वामी • वर्तमान काल', Icons.watch_later_outlined, () async {
+      KeyedSubtree(key: const ValueKey('hora'), child: _sectionPage(context, 15, 'होरा चक्र', '24 होरा • ग्रह स्वामी • वर्तमान काल', Icons.watch_later_outlined, () async {
         await _openRoute(const HoraChakraScreen());
       })),
-      KeyedSubtree(key: const ValueKey('gochar'), child: _sectionPage(context, 'दैनिक गोचर', 'ग्रह गोचर चंद्र भाव से फल', Icons.public, () async {
+      KeyedSubtree(key: const ValueKey('gochar'), child: _sectionPage(context, 16, 'दैनिक गोचर', 'ग्रह गोचर चंद्र भाव से फल', Icons.public, () async {
         await _openRoute(const GocharScreen());
       })),
-      KeyedSubtree(key: const ValueKey('annual_muhurat'), child: _sectionPage(context, 'मुहूर्त सारणी', 'ब्रह्म • अभिजित • विजय • प्रदोष', Icons.table_chart_outlined, () async {
+      KeyedSubtree(key: const ValueKey('annual_muhurat'), child: _sectionPage(context, 17, 'मुहूर्त सारणी', 'ब्रह्म • अभिजित • विजय • प्रदोष', Icons.table_chart_outlined, () async {
         await _openRoute(const AnnualMuhuratScreen());
       })),
-      KeyedSubtree(key: const ValueKey('compass'), child: _sectionPage(context, 'वैदिक दिशा-सूचक', 'दिशाशूल • लक्ष्य दिशा • यात्रा कम्पास', Icons.explore_rounded, () async {
+      KeyedSubtree(key: const ValueKey('compass'), child: _sectionPage(context, 18, 'वैदिक दिशा-सूचक', 'दिशाशूल • लक्ष्य दिशा • यात्रा कम्पास', Icons.explore_rounded, () async {
         await _openRoute(const DigitalCompassScreen());
       })),
-      KeyedSubtree(key: const ValueKey('moon'), child: _sectionPage(context, 'चन्द्र कला', 'तिथि • पक्ष • प्रकाश प्रतिशत', Icons.nightlight_round, () async {
+      KeyedSubtree(key: const ValueKey('moon'), child: _sectionPage(context, 19, 'चन्द्र कला', 'तिथि • पक्ष • प्रकाश प्रतिशत', Icons.nightlight_round, () async {
         await _openRoute(const MoonPhaseScreen());
       })),
-      KeyedSubtree(key: const ValueKey('varga'), child: _sectionPage(context, 'वर्ग विश्लेषण', 'षोडश वर्ग • विवाह • करियर • धन', Icons.hub_outlined, () async {
+      KeyedSubtree(key: const ValueKey('varga'), child: _sectionPage(context, 20, 'वर्ग विश्लेषण', 'षोडश वर्ग • विवाह • करियर • धन', Icons.hub_outlined, () async {
         await _openRoute(const VargaAnalysisScreen());
       })),
-      KeyedSubtree(key: const ValueKey('branding'), child: _sectionPage(context, 'ज्योतिषी ब्रांडिंग', 'PDF आवरण • नाम • संस्थान', Icons.badge_outlined, () async {
+      KeyedSubtree(key: const ValueKey('branding'), child: _sectionPage(context, 21, 'ज्योतिषी ब्रांडिंग', 'PDF आवरण • नाम • संस्थान', Icons.badge_outlined, () async {
         await _openRoute(const AstrologerBrandingScreen());
       })),
     ];
