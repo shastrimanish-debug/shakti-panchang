@@ -238,7 +238,7 @@ class _KundaliScreenState extends State<KundaliScreen> {
         foregroundColor: _bhojBg,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text('कुंडली', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19)),
         actions: [
